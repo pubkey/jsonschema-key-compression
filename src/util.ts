@@ -12,7 +12,7 @@ const base58Length = base58Chars.length;
  * @return {string} the string-representation of the number | '2oMX'
  */
 export function numberToLetter(nr: number): string {
-    const digits = [];
+    const digits: number[] = [];
     do {
         const v = nr % base58Length;
         digits.push(v);
@@ -40,4 +40,14 @@ export function trimDots(str: string): string {
         str = str.slice(0, -1);
 
     return str;
+}
+
+export function alphabeticCompare(a, b) {
+    if (a < b) {
+        return -1;
+    }
+    if (b > a) {
+        return 1;
+    }
+    return 0;
 }

@@ -1,75 +1,18 @@
 import {
-    JsonSchema
-} from '../types/schema';
-import {
-    PlainJsonObject
-} from '../types/json-object';
+    PlainJsonObject,
+    CompressionTable,
+    JsonSchema,
+    TableType
+} from '../types/index';
 import {
     numberToLetter,
-    trimDots
+    trimDots,
+    alphabeticCompare
 } from './util';
 
-type TableType = Map<string, string>;
-
-export type CompressionTable = {
-    compressedToUncompressed: TableType;
-    uncompressedToCompressed: TableType;
-};
-
-export function createCompressionTable(schema: JsonSchema): CompressionTable {
-    const table = _compressedToUncompressedTable(schema);
-    const compressionTable: CompressionTable = {
-        compressedToUncompressed: table,
-        uncompressedToCompressed: reverseTable(table)
-    };
-
-    return compressionTable;
-}
-
-
-export function _compressedToUncompressedTable(schema: JsonSchema): TableType {
-    let lastKeyNumber = 0;
-    const nextKey = () => {
-        lastKeyNumber++;
-        return numberToLetter(lastKeyNumber - 1);
-    };
-    const table: TableType = new Map();
-
-    const propertiesToTable = (path, obj) => {
-        Object.keys(obj).map(key => {
-            const propertyObj = obj[key];
-            const fullPath = (key === 'properties') ? path : trimDots(path + '.' + key);
-            if (
-                typeof propertyObj === 'object' && // do not add schema-attributes
-                !Array.isArray(propertyObj) && // do not use arrays
-                !table.has(fullPath) &&
-                fullPath !== '' &&
-                key.length > 3 && // do not compress short keys
-                !fullPath.startsWith('_') // _id/_rev etc should never be compressed
-            ) table.set(fullPath, '|' + nextKey());
-
-            // primary-key is always compressed to _id
-            if (propertyObj.primary === true)
-                table.set(fullPath, '_id');
-
-            if (typeof propertyObj === 'object' && !Array.isArray(propertyObj))
-                propertiesToTable(fullPath, propertyObj);
-        });
-    };
-    propertiesToTable('', schema);
-    return table;
-}
-
-export function reverseTable(table: TableType): TableType {
-    const reverseTable: TableType = new Map();
-    Array.from(table.keys()).forEach(key => {
-        const value = table.get(key) as string;
-        const fieldName = key.split('.').pop() as string;
-        reverseTable.set(value, fieldName);
-    });
-    return reverseTable;
-}
-
+export {
+    createCompressionTable
+} from './create-compression-table';
 
 /**
    * compress the keys of an object via the compression-table

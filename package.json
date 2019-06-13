@@ -17,7 +17,7 @@
     "lint": "tslint --project .",
     "transpile": "tsc -p ./ && echo '# transpile sucess!'",
     "build": "npm run transpile",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "ts-mocha  --bail --exit ./test/unit/index.test.ts",
     "test:performance": "ts-mocha  --bail --exit ./test/performance.test.ts"
   },
   "devDependencies": {

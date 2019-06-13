@@ -9,6 +9,7 @@
         "noImplicitReturns": true,
         "noImplicitThis": true,
         "suppressImplicitAnyIndexErrors": true,
+        "downlevelIteration": true,
         "moduleResolution": "node",
         "target": "es5",
         "outDir": "./dist",
