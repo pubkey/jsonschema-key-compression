@@ -24,7 +24,10 @@ export function createCompressionTable(
     const table = _compressedToUncompressedTable(schema);
     const compressionTable: CompressionTable = {
         compressedToUncompressed: table,
-        uncompressedToCompressed: _reverseTable(table),
+        uncompressedToCompressed: uncompressedToCompressedTable(
+            table,
+            compressionFlag
+        ),
         compressionFlag
     };
 
@@ -76,11 +79,14 @@ export function _compressedToUncompressedTable(schema: JsonSchema): TableType {
     return table;
 }
 
-export function _reverseTable(table: TableType): TableType {
+export function uncompressedToCompressedTable(
+    table: TableType,
+    compressionFlag: string
+): TableType {
     const reverseTable: TableType = new Map();
     Array.from(table.keys()).forEach(key => {
         const value = table.get(key) as string;
-        reverseTable.set(value, key);
+        reverseTable.set(compressionFlag + value, key);
     });
     return reverseTable;
 }

@@ -9,7 +9,7 @@ import {
 import {
     createCompressionTable,
     compressObject,
-    decompress
+    decompressObject
 } from '../src/index';
 import {
     PlainJsonObject
@@ -126,7 +126,7 @@ describe('performance.test.js', () => {
 
         for (let i = 0; i < compressedObjects.length; i++) {
             // console.dir(compressedObjects[i]);
-            const decompressed = decompress(table, compressedObjects[i]);
+            const decompressed = decompressObject(table, compressedObjects[i]);
             // console.dir(decompressed);
         }
 

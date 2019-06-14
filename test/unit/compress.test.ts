@@ -1,8 +1,7 @@
 import * as assert from 'assert';
 import {
     compressObject,
-    DEFAULT_COMPRESSION_FLAG,
-    compressPath
+    compressedPath
 } from '../../src/index';
 import {
     getDefaultCompressionTable,
@@ -19,13 +18,14 @@ describe('compress.test.ts', () => {
             assert.ok(compressed);
         });
         it('should have a compressed attribute', () => {
+            const table = getDefaultCompressionTable();
             const compressed = compressObject(
-                getDefaultCompressionTable(),
+                table,
                 getDefaultObject()
             );
             assert.ok(
                 Object.keys(compressed).
-                    find(key => key.startsWith(DEFAULT_COMPRESSION_FLAG))
+                    find(key => key.startsWith(table.compressionFlag))
             );
         });
         it('should not have compressed the attribute thats in not in the schema', () => {
@@ -54,9 +54,9 @@ describe('compress.test.ts', () => {
             );
         });
     });
-    describe('.compressPath()', () => {
+    describe('.compressedPath()', () => {
         it('should not throw', () => {
-            const compressed = compressPath(
+            const compressed = compressedPath(
                 getDefaultCompressionTable(),
                 'nestedObject.nestedAttribute'
             );
@@ -64,7 +64,7 @@ describe('compress.test.ts', () => {
         });
         it('should only contain compressed keys', () => {
             const table = getDefaultCompressionTable();
-            const compressed = compressPath(
+            const compressed = compressedPath(
                 table,
                 'nestedObject.nestedAttribute'
             );
@@ -79,7 +79,7 @@ describe('compress.test.ts', () => {
         });
         it('should not loose keys', () => {
             const table = getDefaultCompressionTable();
-            const compressed = compressPath(
+            const compressed = compressedPath(
                 table,
                 'nestedObject.nestedAttribute.deepNestedAttribute'
             );
@@ -87,7 +87,7 @@ describe('compress.test.ts', () => {
             assert.equal(split.length, 3);
         });
         it('should not have compressed the attribute thats in not in the schema', () => {
-            const compressed = compressPath(
+            const compressed = compressedPath(
                 getDefaultCompressionTable(),
                 'notInSchema.deepNestedAttribute'
             );
@@ -96,7 +96,7 @@ describe('compress.test.ts', () => {
         it('should throw when the object contains an attribute that starts with the compression-flag', () => {
             const table = getDefaultCompressionTable();
             assert.throws(
-                () => compressPath(
+                () => compressedPath(
                     table,
                     'nestedObject.|foobar'
                 )

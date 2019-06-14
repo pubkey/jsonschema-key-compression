@@ -7,12 +7,13 @@ import {
 import {
     JsonSchema,
     PlainJsonObject,
-    CompressionTable
+    CompressionTable,
 } from '../../types/index';
 
 import {
-    createCompressionTable
-} from '../../src/create-compression-table';
+    createCompressionTable,
+    compressObject
+} from '../../src/index';
 
 export function getDefaultSchema(): JsonSchema {
     const schema: JsonSchema = {
@@ -86,6 +87,13 @@ export function getDefaultObject(): PlainJsonObject {
         notInSchema: randomString()
     };
     return obj;
+}
+
+export function getDefaultCompressedObject(): PlainJsonObject {
+    return compressObject(
+        getDefaultCompressionTable(),
+        getDefaultObject()
+    );
 }
 
 export function getDefaultCompressionTable(): CompressionTable {

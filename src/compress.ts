@@ -15,7 +15,7 @@ export function compressObject(
     else if (Array.isArray(obj)) {
         // array
         return obj
-            .map(o => compressObject(table, o));
+            .map(item => compressObject(table, item));
     } else {
         // object
         const ret = {};
@@ -41,7 +41,7 @@ export function compressObject(
  * - input: 'name.firstName'
  * - ouput: '|a.|b'
  */
-export function compressPath(
+export function compressedPath(
     table: CompressionTable,
     path: string
 ): string {

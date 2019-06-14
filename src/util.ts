@@ -25,23 +25,6 @@ export function numberToLetter(nr: number): string {
         .join('');
 }
 
-/**
- * removes trailing and ending dots from the string
- * @param  {string} str
- * @return {string} str without wrapping dots
- */
-export function trimDots(str: string): string {
-    // start
-    while (str.charAt(0) === '.')
-        str = str.substr(1);
-
-    // end
-    while (str.slice(-1) === '.')
-        str = str.slice(0, -1);
-
-    return str;
-}
-
 export function alphabeticCompare(a, b) {
     if (a < b) {
         return -1;
