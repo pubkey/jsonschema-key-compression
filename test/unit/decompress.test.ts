@@ -2,6 +2,7 @@ import * as assert from 'assert';
 import {
     decompressObject,
     compressObject,
+    compressedPath,
     decompressedPath
 } from '../../src/index';
 import {
@@ -43,6 +44,32 @@ describe('decompress.test.ts', () => {
                 '|foo.|bar.|car'
             );
             assert.ok(compressed.length > 3);
+        });
+        it('should compress all parts', ()=> {
+            const table = getDefaultCompressionTable();
+            const path = 'nestedObject.nestedAttribute';
+            const compressed = compressedPath(
+                table,
+                path
+            );
+            const split = compressed.split('.');
+            split.forEach(p => assert.ok(p.startsWith(table.compressionFlag)));
+        });
+        it('turnarround should output an equal path', () => {
+            const table = getDefaultCompressionTable();
+            const path = 'nestedObject.nestedAttribute';
+            const compressed = compressedPath(
+                table,
+                path
+            );
+            const decompressed = decompressedPath(
+                table,
+                compressed
+            );
+            assert.equal(
+                path,
+                decompressed
+            );
         });
     });
 });
