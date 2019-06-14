@@ -8,7 +8,7 @@ import {
 
 import {
     createCompressionTable,
-    compress,
+    compressObject,
     decompress
 } from '../src/index';
 import {
@@ -90,7 +90,7 @@ describe('performance.test.js', () => {
         // run
         for (let i = 0; i < benchmark.createCompressionTable.amount; i++) {
             const table = createCompressionTable(schema);
-            console.dir(table);
+            // console.dir(table);
         }
         const elapsed = performanceNow() - startTime;
 
@@ -108,8 +108,8 @@ describe('performance.test.js', () => {
         )
 
         for (let i = 0; i < objects.length; i++) {
-            const compressed = compress(table, objects[i]);
-            console.dir(compressed);
+            const compressed = compressObject(table, objects[i]);
+            // console.dir(compressed);
         }
 
         const elapsed = performanceNow() - startTime;
@@ -122,12 +122,12 @@ describe('performance.test.js', () => {
         const table = createCompressionTable(schema);
         const compressedObjects = new Array(benchmark.decompress.amount).fill(0)
             .map(() => randomObject())
-            .map(obj => compress(table, obj))
+            .map(obj => compressObject(table, obj))
 
         for (let i = 0; i < compressedObjects.length; i++) {
-            console.dir(compressedObjects[i]);
+            // console.dir(compressedObjects[i]);
             const decompressed = decompress(table, compressedObjects[i]);
-            console.dir(decompressed);
+            // console.dir(decompressed);
         }
 
         const elapsed = performanceNow() - startTime;

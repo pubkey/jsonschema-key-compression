@@ -11,17 +11,13 @@ import {
 } from './util';
 
 export {
-    createCompressionTable
+    createCompressionTable,
+    DEFAULT_COMPRESSION_FLAG
 } from './create-compression-table';
-
-/**
-   * compress the keys of an object via the compression-table
-   * @param {Object} obj
-   * @param {Object} compressed obj
-   */
-export function compress(table: CompressionTable, obj: PlainJsonObject): PlainJsonObject {
-    return _compressObj(table, obj);
-}
+export {
+    compressObject,
+    compressPath
+} from './compress';
 
 
 export function _decompressObj(table: CompressionTable, obj: PlainJsonObject) {
@@ -85,27 +81,4 @@ export function transformKey(
         return transformKey(table, nextFullPath, prePathCompressed, remainPathAr);
     else
         return trimDots(prePathCompressed);
-}
-
-export function _compressObj(
-    table: CompressionTable,
-    obj: PlainJsonObject,
-    path: string = ''
-) {
-    const ret = {};
-    if (typeof obj !== 'object' || obj === null) return obj;
-    if (Array.isArray(obj)) {
-        return obj
-            .map(o => _compressObj(table, o, trimDots(path + '.item')));
-    }
-    const compressedTable = table.compressedToUncompressed;
-    Object.keys(obj).forEach(key => {
-        const propertyObj = obj[key];
-        const fullPath = trimDots(path + '.' + key);
-        const replacedKey = compressedTable[fullPath] ? compressedTable[fullPath] : key;
-        let nextObj = propertyObj;
-        nextObj = _compressObj(table, propertyObj, fullPath);
-        ret[replacedKey] = nextObj;
-    });
-    return ret;
 }

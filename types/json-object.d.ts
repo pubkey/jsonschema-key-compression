@@ -3,6 +3,8 @@
  * which can be fully json-stringified and parsed
  * TODO
  */
-export type PlainJsonObject = {
+export type PlainJsonObjectNotArray = {
     [k: string]: any;
 };
+
+export type PlainJsonObject = PlainJsonObjectNotArray | PlainJsonObjectNotArray[];

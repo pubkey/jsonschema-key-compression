@@ -9,11 +9,23 @@ import {
     alphabeticCompare
 } from './util';
 
-export function createCompressionTable(schema: JsonSchema): CompressionTable {
+/**
+ * Compressed property-names begin with the compression-flag
+ * it indicates that the name is compressed.
+ * If an object is compressed, where one attribute starts with the
+ * compression-flag, an error will be thrown.
+ */
+export const DEFAULT_COMPRESSION_FLAG = '|';
+
+export function createCompressionTable(
+    schema: JsonSchema,
+    compressionFlag: string = DEFAULT_COMPRESSION_FLAG
+): CompressionTable {
     const table = _compressedToUncompressedTable(schema);
     const compressionTable: CompressionTable = {
         compressedToUncompressed: table,
-        uncompressedToCompressed: _reverseTable(table)
+        uncompressedToCompressed: _reverseTable(table),
+        compressionFlag
     };
 
     return compressionTable;

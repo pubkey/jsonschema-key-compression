@@ -18,7 +18,8 @@
     "transpile": "tsc -p ./ && echo '# transpile sucess!'",
     "build": "npm run transpile",
     "test": "ts-mocha  --bail --exit ./test/unit/index.test.ts",
-    "test:performance": "ts-mocha  --bail --exit ./test/performance.test.ts"
+    "test:performance": "ts-mocha  --bail --exit ./test/performance.test.ts",
+    "dev": "mocha -r ts-node/register test/unit/index.test.ts  --watch --watch-extensions ts"
   },
   "devDependencies": {
     "@types/mocha": "5.2.7",
