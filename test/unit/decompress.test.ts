@@ -45,7 +45,7 @@ describe('decompress.test.ts', () => {
             );
             assert.ok(compressed.length > 3);
         });
-        it('should compress all parts', ()=> {
+        it('should compress all parts', () => {
             const table = getDefaultCompressionTable();
             const path = 'nestedObject.nestedAttribute';
             const compressed = compressedPath(
@@ -71,5 +71,22 @@ describe('decompress.test.ts', () => {
                 decompressed
             );
         });
+        it('should be able to compress array-paths', () => {
+            const table = getDefaultCompressionTable();
+            const path = 'objectArray[1].deepNested';
+            const compressed = compressedPath(
+                table,
+                path
+            );
+            const decompressed = decompressedPath(
+                table,
+                compressed
+            );
+            assert.equal(
+                path,
+                decompressed
+            );
+        });
+
     });
 });

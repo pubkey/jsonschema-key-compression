@@ -55,10 +55,19 @@ export function decompressedKey(
     table: CompressionTable,
     key: string
 ): string {
+
+    /**
+        * keys could be array-accessors like myArray[4]
+        * we have to split and readd the squared brackets value
+        */
+    const splitSquaredBrackets = key.split('[');
+    key = splitSquaredBrackets.shift() as string;
+
     const decompressedKey = table.uncompressedToCompressed.get(key);
     if (!decompressedKey) {
         return key;
     } else {
-        return decompressedKey;
+        const readdSquared = splitSquaredBrackets.length ? '[' + splitSquaredBrackets.join('[') : '';
+        return decompressedKey + readdSquared;
     }
 }

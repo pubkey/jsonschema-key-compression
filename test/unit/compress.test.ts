@@ -102,5 +102,14 @@ describe('compress.test.ts', () => {
                 )
             );
         });
+        it('should be able to compress array-paths', () => {
+            const table = getDefaultCompressionTable();
+            const compressed = compressedPath(
+                table,
+                'objectArray[1].deepNested'
+            );
+            assert.ok(compressed.includes('[1]'));
+            assert.ok(compressed.startsWith(table.compressionFlag));
+        });
     });
 });

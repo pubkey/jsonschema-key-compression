@@ -38,8 +38,8 @@ export function compressObject(
  * transform an object-path
  * into its compressed version
  * e.g:
- * - input: 'name.firstName'
- * - ouput: '|a.|b'
+ * - input: 'names[1].firstName'
+ * - ouput: '|a[1].|b'
  */
 export function compressedPath(
     table: CompressionTable,
@@ -76,10 +76,19 @@ export function compressedAndFlaggedKey(
         table,
         key
     );
+
+    /**
+     * keys could be array-accessors like myArray[4]
+     * we have to split and readd the squared brackets value
+     */
+    const splitSquaredBrackets = key.split('[');
+    key = splitSquaredBrackets.shift() as string;
+
     const compressedKey = table.compressedToUncompressed.get(key);
     if (!compressedKey) {
         return key;
     } else {
-        return table.compressionFlag + compressedKey;
+        const readdSquared = splitSquaredBrackets.length ? '[' + splitSquaredBrackets.join('[') : '';
+        return table.compressionFlag + compressedKey + readdSquared;
     }
 }
