@@ -105,7 +105,7 @@ describe('performance.test.js', () => {
         const table = createCompressionTable(schema);
         const objects = new Array(benchmark.compress.amount).fill(0).map(
             () => randomObject()
-        )
+        );
 
         for (let i = 0; i < objects.length; i++) {
             const compressed = compressObject(table, objects[i]);
@@ -122,7 +122,7 @@ describe('performance.test.js', () => {
         const table = createCompressionTable(schema);
         const compressedObjects = new Array(benchmark.decompress.amount).fill(0)
             .map(() => randomObject())
-            .map(obj => compressObject(table, obj))
+            .map(obj => compressObject(table, obj));
 
         for (let i = 0; i < compressedObjects.length; i++) {
             // console.dir(compressedObjects[i]);

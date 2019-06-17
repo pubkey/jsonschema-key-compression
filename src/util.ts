@@ -8,8 +8,6 @@ const base58Length = base58Chars.length;
 /**
  * transform a number to a string by using only base58 chars
  * @link https://github.com/matthewmueller/number-to-letter/blob/master/index.js
- * @param {number} nr                                       | 10000000
- * @return {string} the string-representation of the number | '2oMX'
  */
 export function numberToLetter(nr: number): string {
     const digits: number[] = [];
@@ -25,7 +23,9 @@ export function numberToLetter(nr: number): string {
         .join('');
 }
 
-export function alphabeticCompare(a, b) {
+export type SortComparator<T = any> = (a: T, y: T) => -1 | 1 | 0;
+
+export const alphabeticCompare: SortComparator = (a, b) => {
     if (a < b) {
         return -1;
     }
@@ -33,4 +33,4 @@ export function alphabeticCompare(a, b) {
         return 1;
     }
     return 0;
-}
+};

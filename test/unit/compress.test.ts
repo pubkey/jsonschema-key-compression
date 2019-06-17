@@ -1,7 +1,10 @@
 import * as assert from 'assert';
 import {
     compressObject,
-    compressedPath
+    compressedPath,
+    compressQuerySelector,
+    compressQuery,
+    MangoQuery
 } from '../../src/index';
 import {
     getDefaultCompressionTable,
@@ -110,6 +113,138 @@ describe('compress.test.ts', () => {
             );
             assert.ok(compressed.includes('[1]'));
             assert.ok(compressed.startsWith(table.compressionFlag));
+        });
+    });
+    describe('.compressQuerySelector()', () => {
+        it('should compress the selector', () => {
+            const selector = {
+                'active': {
+                    $eq: true
+                }
+            };
+            const table = getDefaultCompressionTable();
+            const compressed = compressQuerySelector(
+                table,
+                selector
+            );
+            assert.deepEqual(
+                compressed,
+                { '|a': { $eq: true } }
+            );
+        });
+        it('deeper nested', () => {
+            const selector = {
+                $and: [
+                    {
+                        active: true
+                    },
+                    {
+                        'nestedObject.nestedAttribute': {
+                            $ne: 'foobar'
+                        }
+                    }
+                ]
+            };
+            const table = getDefaultCompressionTable();
+            const compressed = compressQuerySelector(
+                table,
+                selector
+            );
+            assert.deepEqual(
+                compressed,
+                {
+                    $and: [
+                        {
+                            '|a': true
+                        },
+                        {
+                            '|g.|f': {
+                                $ne: 'foobar'
+                            }
+                        }
+                    ]
+                }
+            );
+        });
+    });
+    describe('.compressQuery()', () => {
+        it('should compress all attributes', () => {
+            const query: MangoQuery = {
+                selector: {
+                    $and: [
+                        {
+                            active: true
+                        },
+                        {
+                            'nestedObject.nestedAttribute': {
+                                $ne: 'foobar'
+                            }
+                        }
+                    ]
+                },
+                skip: 1,
+                limit: 1,
+                fields: [
+                    'id',
+                    'name'
+                ],
+                sort: [
+                    'name',
+                    '-active'
+                ]
+            };
+
+            const table = getDefaultCompressionTable();
+            const compressed = compressQuery(
+                table,
+                query
+            );
+            assert.deepEqual(
+                compressed,
+                {
+                    selector: {
+                        $and: [
+                            {
+                                '|a': true
+                            },
+                            {
+                                '|g.|f': {
+                                    $ne: 'foobar'
+                                }
+                            }
+                        ]
+                    },
+                    skip: 1,
+                    limit: 1,
+                    fields: [
+                        'id',
+                        '|e'
+                    ],
+                    sort: [
+                        '|e',
+                        '-|a'
+                    ]
+                }
+            );
+        });
+        it('should work with sort-objects', () => {
+            const query: MangoQuery = {
+                selector: {},
+                sort: [
+                    { 'name': 1 },
+                    { '-active': -1 }
+                ]
+            };
+
+            const table = getDefaultCompressionTable();
+            const compressed = compressQuery(
+                table,
+                query
+            );
+            assert.deepEqual(
+                compressed.sort,
+                [{ '|e': 1 }, { '-active': -1 }]
+            );
         });
     });
 });

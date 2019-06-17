@@ -37,8 +37,8 @@ export function createCompressionTable(
 export function getPropertiesOfSchema(schema: JsonSchema): Set<string> {
     const ret: Set<string> = new Set();
 
-    function addSchema(schema: JsonSchema) {
-        const keys = getPropertiesOfSchema(schema);
+    function addSchema(innerSchema: JsonSchema) {
+        const keys = getPropertiesOfSchema(innerSchema);
         Array.from(keys).forEach(k => ret.add(k));
     }
 
@@ -74,7 +74,7 @@ export function _compressedToUncompressedTable(schema: JsonSchema): TableType {
         .forEach(k => {
             const compressKey = numberToLetter(lastKeyNumber);
             lastKeyNumber++;
-            table.set(k, compressKey)
+            table.set(k, compressKey);
         });
     return table;
 }

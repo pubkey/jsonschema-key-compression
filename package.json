@@ -15,6 +15,7 @@
   "homepage": "https://github.com/pubkey/jsonschema-key-compression#readme",
   "scripts": {
     "lint": "tslint --project .",
+    "lint:fix": "tslint --project . --fix",
     "transpile": "tsc -p ./ && echo '# transpile sucess!'",
     "build": "npm run transpile",
     "test": "ts-mocha  --bail --exit ./test/unit/index.test.ts",
@@ -23,8 +24,8 @@
   },
   "devDependencies": {
     "@types/mocha": "5.2.7",
-    "assert": "^2.0.0",
-    "async-test-util": "^1.7.3",
+    "assert": "2.0.0",
+    "async-test-util": "1.7.3",
     "mocha": "6.1.4",
     "ts-mocha": "6.0.0",
     "ts-node": "8.2.0",

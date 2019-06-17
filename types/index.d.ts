@@ -11,3 +11,7 @@ export {
     JsonSchema,
     JsonSchemaTypes
 } from './schema';
+
+export {
+    MangoQuery
+} from './mango-query';

@@ -1,13 +1,11 @@
 import {
-    clone,
     randomString,
-    randomBoolean,
-    randomNumber
+    randomBoolean
 } from 'async-test-util';
 import {
     JsonSchema,
     PlainJsonObject,
-    CompressionTable,
+    CompressionTable
 } from '../../types/index';
 
 import {

@@ -63,11 +63,11 @@ export function decompressedKey(
     const splitSquaredBrackets = key.split('[');
     key = splitSquaredBrackets.shift() as string;
 
-    const decompressedKey = table.uncompressedToCompressed.get(key);
-    if (!decompressedKey) {
+    const decompressed = table.uncompressedToCompressed.get(key);
+    if (!decompressed) {
         return key;
     } else {
         const readdSquared = splitSquaredBrackets.length ? '[' + splitSquaredBrackets.join('[') : '';
-        return decompressedKey + readdSquared;
+        return decompressed + readdSquared;
     }
 }

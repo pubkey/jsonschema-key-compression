@@ -11,10 +11,14 @@ export {
 } from './create-compression-table';
 export {
     compressObject,
-    compressedPath
+    compressedPath,
+    compressQuerySelector,
+    compressQuery
 } from './compress';
 
 export {
     decompressObject,
-    decompressedPath
+    decompressedPath,
 } from './decompress';
+
+export * from '../types/index';

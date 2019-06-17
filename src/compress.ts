@@ -1,6 +1,7 @@
 import {
     PlainJsonObject,
-    CompressionTable
+    CompressionTable,
+    MangoQuery
 } from '../types/index';
 
 /**
@@ -90,5 +91,89 @@ export function compressedAndFlaggedKey(
     } else {
         const readdSquared = splitSquaredBrackets.length ? '[' + splitSquaredBrackets.join('[') : '';
         return table.compressionFlag + compressedKey + readdSquared;
+    }
+}
+
+
+/**
+ * compress a mango-query
+ * so that it can be used to find documents
+ * in a database where all documents are compressed
+ */
+export function compressQuery(
+    table: CompressionTable,
+    query: MangoQuery
+): MangoQuery {
+    const ret: MangoQuery = {
+        selector: compressQuerySelector(
+            table,
+            query.selector
+        )
+    };
+    if (query.skip) ret.skip = query.skip;
+    if (query.limit) ret.limit = query.limit;
+
+    if (query.fields) {
+        ret.fields = query.fields
+            .map(field => compressedPath(
+                table,
+                field
+            ));
+    }
+
+    if (query.sort) {
+        ret.sort = (query.sort as any).map(item => {
+            if (typeof item === 'string') {
+                const hasMinus = item.startsWith('-');
+                if (hasMinus) {
+                    item = item.substr(1);
+                }
+                let compressedField = compressedPath(
+                    table,
+                    item
+                );
+                if (hasMinus) {
+                    compressedField = '-' + compressedField;
+                }
+                return compressedField;
+            } else {
+                return compressQuerySelector(
+                    table,
+                    item
+                );
+            }
+        });
+    }
+    return ret;
+}
+
+export function compressQuerySelector(
+    table: CompressionTable,
+    selector: any
+): any {
+    if (Array.isArray(selector)) {
+        return selector.map(item => compressQuerySelector(table, item));
+    } else if (typeof selector === 'object' && selector !== null) {
+        const ret = {};
+        Object.keys(selector).forEach(key => {
+            let useKey;
+            if (key.startsWith('$')) {
+                // operator
+                useKey = key;
+            } else {
+                // property path
+                useKey = compressedPath(
+                    table,
+                    key
+                );
+            }
+            ret[useKey] = compressQuerySelector(
+                table,
+                selector[key]
+            );
+        });
+        return ret;
+    } else {
+        return selector;
     }
 }
