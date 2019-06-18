@@ -97,7 +97,7 @@ describe('performance.test.js', () => {
         // track
         benchmark.createCompressionTable.total = elapsed;
         benchmark.createCompressionTable.perInstance = elapsed / benchmark.createCompressionTable.amount;
-// process.exit();
+        // process.exit();
     });
     it('.compress()', () => {
         // prepare
@@ -124,10 +124,12 @@ describe('performance.test.js', () => {
             .map(() => randomObject())
             .map(obj => compressObject(table, obj));
 
+        const x: any[] = [];
         for (let i = 0; i < compressedObjects.length; i++) {
-            // console.dir(compressedObjects[i]);
+            console.dir(compressedObjects[i]);
             const decompressed = decompressObject(table, compressedObjects[i]);
-            // console.dir(decompressed);
+            x.push(decompressed);
+            console.dir(decompressed);
         }
 
         const elapsed = performanceNow() - startTime;

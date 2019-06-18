@@ -18,8 +18,8 @@
     "lint:fix": "tslint --project . --fix",
     "transpile": "tsc -p ./ && echo '# transpile sucess!'",
     "build": "npm run transpile",
-    "test": "ts-mocha  --bail --exit ./test/unit/index.test.ts",
-    "test:performance": "ts-mocha  --bail --exit ./test/performance.test.ts",
+    "test": "mocha -r ts-node/register test/unit/index.test.ts",
+    "test:performance": "mocha -r ts-node/register --bail --exit ./test/performance.test.ts",
     "dev": "mocha -r ts-node/register test/unit/index.test.ts  --watch --watch-extensions ts"
   },
   "devDependencies": {
@@ -27,10 +27,9 @@
     "assert": "2.0.0",
     "async-test-util": "1.7.3",
     "mocha": "6.1.4",
-    "ts-mocha": "6.0.0",
-    "ts-node": "8.2.0",
+    "ts-node": "8.3.0",
     "tslint": "5.17.0",
-    "typescript": "3.5.1"
+    "typescript": "3.5.2"
   },
   "dependencies": {}
 }

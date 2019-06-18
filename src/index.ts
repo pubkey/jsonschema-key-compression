@@ -1,9 +1,4 @@
-export {
-    PlainJsonObject,
-    CompressionTable,
-    JsonSchema,
-    TableType
-} from '../types/index';
+export * from '../types/index.d';
 
 export {
     createCompressionTable,
@@ -20,5 +15,3 @@ export {
     decompressObject,
     decompressedPath,
 } from './decompress';
-
-export * from '../types/index';
