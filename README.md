@@ -83,7 +83,7 @@ import {
 } from 'jsonschema-key-compression';
 const jsonObject = decompressObject(
     compressionTable,
-    compressionTable
+    compressedObject
 );
 ```
 
