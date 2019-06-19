@@ -121,7 +121,7 @@ Compress a [mango-query](https://docs.mongodb.com/manual/tutorial/query-document
 import {
     compressQuery
 } from 'jsonschema-key-compression';
-const decompressed = compressQuery(
+const compressed = compressQuery(
     compressionTable,
     {
         selector: {
