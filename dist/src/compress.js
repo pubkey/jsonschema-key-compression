@@ -1,0 +1,131 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * compress the keys of an object via the compression-table
+ * @recursive
+ */
+function compressObject(table, obj) {
+    if (typeof obj !== 'object' || obj === null)
+        return obj;
+    else if (Array.isArray(obj)) {
+        // array
+        return obj
+            .map(function (item) { return compressObject(table, item); });
+    }
+    else {
+        // object
+        var ret_1 = {};
+        Object.keys(obj).forEach(function (key) {
+            var compressedKey = compressedAndFlaggedKey(table, key);
+            var value = compressObject(table, obj[key]);
+            ret_1[compressedKey] = value;
+        });
+        return ret_1;
+    }
+}
+exports.compressObject = compressObject;
+/**
+ * transform an object-path
+ * into its compressed version
+ * e.g:
+ * - input: 'names[1].firstName'
+ * - ouput: '|a[1].|b'
+ */
+function compressedPath(table, path) {
+    var splitted = path.split('.');
+    return splitted
+        .map(function (subKey) {
+        var compressedKey = compressedAndFlaggedKey(table, subKey);
+        return compressedKey;
+    }).join('.');
+}
+exports.compressedPath = compressedPath;
+function throwErrorIfCompressionFlagUsed(table, key) {
+    if (key.startsWith(table.compressionFlag)) {
+        throw new Error('cannot compress objects that start with the compression-flag: ' +
+            table.compressionFlag + ' on key ' + key);
+    }
+}
+exports.throwErrorIfCompressionFlagUsed = throwErrorIfCompressionFlagUsed;
+function compressedAndFlaggedKey(table, key) {
+    throwErrorIfCompressionFlagUsed(table, key);
+    /**
+     * keys could be array-accessors like myArray[4]
+     * we have to split and readd the squared brackets value
+     */
+    var splitSquaredBrackets = key.split('[');
+    key = splitSquaredBrackets.shift();
+    var compressedKey = table.compressedToUncompressed.get(key);
+    if (!compressedKey) {
+        return key;
+    }
+    else {
+        var readdSquared = splitSquaredBrackets.length ? '[' + splitSquaredBrackets.join('[') : '';
+        return table.compressionFlag + compressedKey + readdSquared;
+    }
+}
+exports.compressedAndFlaggedKey = compressedAndFlaggedKey;
+/**
+ * compress a mango-query
+ * so that it can be used to find documents
+ * in a database where all documents are compressed
+ */
+function compressQuery(table, query) {
+    var ret = {
+        selector: compressQuerySelector(table, query.selector)
+    };
+    if (query.skip)
+        ret.skip = query.skip;
+    if (query.limit)
+        ret.limit = query.limit;
+    if (query.fields) {
+        ret.fields = query.fields
+            .map(function (field) { return compressedPath(table, field); });
+    }
+    if (query.sort) {
+        ret.sort = query.sort.map(function (item) {
+            if (typeof item === 'string') {
+                var hasMinus = item.startsWith('-');
+                if (hasMinus) {
+                    item = item.substr(1);
+                }
+                var compressedField = compressedPath(table, item);
+                if (hasMinus) {
+                    compressedField = '-' + compressedField;
+                }
+                return compressedField;
+            }
+            else {
+                return compressQuerySelector(table, item);
+            }
+        });
+    }
+    return ret;
+}
+exports.compressQuery = compressQuery;
+function compressQuerySelector(table, selector) {
+    if (Array.isArray(selector)) {
+        return selector.map(function (item) { return compressQuerySelector(table, item); });
+    }
+    else if (typeof selector === 'object' && selector !== null) {
+        var ret_2 = {};
+        Object.keys(selector).forEach(function (key) {
+            var useKey;
+            if (key.startsWith('$')) {
+                // operator
+                useKey = key;
+            }
+            else {
+                // property path
+                useKey = compressedPath(table, key);
+            }
+            ret_2[useKey] = compressQuerySelector(table, selector[key]);
+        });
+        return ret_2;
+    }
+    else {
+        return selector;
+    }
+}
+exports.compressQuerySelector = compressQuerySelector;
+//# sourceMappingURL=compress.js.map
