@@ -1,0 +1,7 @@
+.git/
+test/
+tsconfig.json
+perf.md
+.travis.yml
+.gitignore
+tslint.json

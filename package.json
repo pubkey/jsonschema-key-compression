@@ -1,8 +1,13 @@
 {
   "name": "jsonschema-key-compression",
   "version": "0.0.1",
-  "description": "",
+  "description": "Compress json-data based on it's json-schema",
   "author": "pubkey",
+  "keywords": [
+    "json",
+    "compression",
+    "jsonschema"
+  ],
   "main": "index.js",
   "repository": {
     "type": "git",
