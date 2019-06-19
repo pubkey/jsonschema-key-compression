@@ -117,7 +117,6 @@ const decompressed = decompressedPath(
 ### compressQuery
 Compress a [mango-query](https://docs.mongodb.com/manual/tutorial/query-documents/) so that it can run over a NoSQL-Database that has stored compressed documents.
 
-
 ```js
 import {
     compressQuery
