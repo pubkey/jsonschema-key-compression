@@ -110,7 +110,7 @@ import {
 const decompressed = decompressedPath(
     compressionTable,
     '|a.|b' // from compressedPath
-);
+); // > 'whateverNested.firstName'
 ```
 
 
