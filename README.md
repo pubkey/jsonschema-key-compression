@@ -31,7 +31,7 @@ becomes this:
 }
 ```
 
-The compressed version only needs **85 chars** while the non-compressed version needs **123 chars**. So by storing the compressed version, you can store up to 30% more data.
+The compressed version only needs **85 chars** while the non-compressed version needs **123 chars**. So by storing the compressed version, you can store up to 30% more data. Compression efficiency depends on the length of the attribute names.
 
 ## You should use this when
 - you want to save storage space in an NoSQL-database but still want to have valid json-data
