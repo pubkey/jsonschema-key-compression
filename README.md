@@ -68,7 +68,7 @@ Compress a json-object based on it's schema.
 import {
     compressObject
 } from 'jsonschema-key-compression';
-const compressedObject = createCompressionTable(
+const compressedObject = compressObject(
     compressionTable,
     jsonObject
 );
