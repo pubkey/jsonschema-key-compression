@@ -132,8 +132,8 @@ const compressed = compressQuery(
         skip: 1,
         limit: 1,
         fields: [
-        'id',
-        'name'
+            'id',
+            'name'
         ],
         sort: [
             'name'
