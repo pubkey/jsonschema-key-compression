@@ -1,6 +1,6 @@
 # jsonschema-key-compression
 
-Compress json-data based on it's [json-schema](https://json-schema.org/) while still having valid json.
+Compress json-data based on its [json-schema](https://json-schema.org/) while still having valid json.
 It works by compressing long attribute-names into smaller ones and backwards.
 
 For example this:
@@ -8,33 +8,74 @@ For example this:
 ```json
 
 {
-    "firstName": "alice",
-    "lastName": "wonder",
-    "registerDate": "2019-06-01",
-    "country": "de",
-    "active": true,
-    "eyeColor": "brown"
+    "firstName": "Corrine",
+    "lastName": "Ziemann",
+    "title": "Ms.",
+    "gender": "f",
+    "zipCode": 75963,
+    "countryCode": "en",
+    "birthYear": 1960,
+    "active": false,
+    "shoppingCartItems": [
+        {
+            "productNumber": 29857,
+            "amount": 1
+        },
+        {
+            "productNumber": 53409,
+            "amount": 6
+        }
+    ]
 }
-
 ```
 
 becomes this:
 
 ```json
 {
-    "|a": "alice",
-    "|b": "wonder",
-    "|c": "2019-06-01",
-    "|d": "de",
-    "|e": true,
-    "|f": "brown"
+    "|e": "Corrine",
+    "|g": "Ziemann",
+    "|j": "Ms.",
+    "|f": "f",
+    "|k": 75963,
+    "|d": "en",
+    "|c": 1960,
+    "|a": false,
+    "|i": [
+        {
+            "|h": 29857,
+            "|b": 1
+        },
+        {
+            "|h": 53409,
+            "|b": 6
+        }
+    ]
 }
 ```
 
-The compressed version only needs **85 chars** while the non-compressed version needs **123 chars**. So by storing the compressed version, you can store up to 30% more data. Compression efficiency depends on the length of the attribute names.
+## Efficiency
+
+The efficiency depends on the amount and length of the attribute names. 
+* The uncompressed json-object from above has about **230 chars** as string
+* With the key-compression, this can be reduced to **140 chars** which saves about **40%**
+* Just using gzip on the json would result in **180 chars**
+* Using gzip+key-compression ends in a string with only **127 chars**
+
+You can reproduce these results by running `npm run test:efficiency`.
+
+## Performance
+
+The compression works pretty fast. Here are some time measurements on a single intel i7 CPU.
+
+* Creating a compression-table from the schema of the object above takes about `0.02ms`
+* Compressing the example-object from above takes about `0.021ms`
+* Decompressing takes about `0.027ms` per object
+
+You can reproduce these results by running `npm run test:performance`.
 
 ## You should use this when
-- you want to save storage space in an NoSQL-database but still want to have valid json-data
+- you want to save storage space in an NoSQL-database but still want to have valid queryable json-data
 - you transmit many objects in many small requests over the network so that gzip cannot be efficient
 - you want to store json-data inside of the browser-storage (indexedDB or localstorage) and you reach the storage limit
 
@@ -42,6 +83,12 @@ The compressed version only needs **85 chars** while the non-compressed version 
 - you send many objects in a single request, you should rely on gzip instead
 - you do not want to still have valid json-data, you should use [protobuf](https://developers.google.com/protocol-buffers/) instead
 - you have schema-less data
+
+
+## Comparison with gzip
+
+Gzip generates its compression-flags [from the input](https://en.wikipedia.org/wiki/Gzip). This makes it more efficient, the more data is compressed at once. But gzip is less efficient the smaller the dataset is.
+The key-compression creates the compression-table from the jsonschema up front with has advantages when small pieces of data are compressed.
 
 ## Usage
 
@@ -62,7 +109,7 @@ const compressionTable = createCompressionTable(jsonSchema);
 ```
 
 ### compressObject
-Compress a json-object based on it's schema.
+Compress a json-object based on its schema.
 
 ```js
 import {
@@ -88,7 +135,7 @@ const jsonObject = decompressObject(
 ```
 
 ### compressedPath
-Transform a chain of json-attributes into it's compresed format.
+Transform a chain of json-attributes into its compressed format.
 
 ```js
 import {

@@ -1,67 +1,17 @@
-import * as assert from 'assert';
 import {
-    randomString,
-    randomBoolean,
-    randomNumber,
     performanceNow
 } from 'async-test-util';
+
+import {
+    randomObject,
+    schema
+} from './helper';
 
 import {
     createCompressionTable,
     compressObject,
     decompressObject
 } from '../src/index';
-import {
-    PlainJsonObject
-} from '../types/json-object';
-import {
-    JsonSchema
-} from '../types/schema';
-
-function randomObject(): PlainJsonObject {
-    return {
-        foostr: randomString(),
-        foobool: randomBoolean(),
-        nested: {
-            keyone: randomNumber(),
-            deep: {
-                keytwo: randomString(),
-                keythree: randomString()
-            }
-        },
-        objectarray: [{
-            keyone: randomString()
-        }, {
-            keyone: randomString()
-        }]
-    };
-}
-
-const schema: JsonSchema = {
-    type: 'object',
-    properties: {
-        foostr: {
-            type: 'string'
-        },
-        foobool: {
-            type: 'boolean'
-        },
-        nested: {
-            type: 'string'
-        },
-        objectarray: {
-            type: 'array',
-            items: {
-                type: 'object',
-                properties: {
-                    keyone: {
-                        type: 'string'
-                    }
-                }
-            }
-        },
-    }
-};
 
 const benchmark = {
     notice: 'times are in milliseconds',
@@ -126,10 +76,10 @@ describe('performance.test.js', () => {
 
         const x: any[] = [];
         for (let i = 0; i < compressedObjects.length; i++) {
-            console.dir(compressedObjects[i]);
+            // console.dir(compressedObjects[i]);
             const decompressed = decompressObject(table, compressedObjects[i]);
             x.push(decompressed);
-            console.dir(decompressed);
+            // console.dir(decompressed);
         }
 
         const elapsed = performanceNow() - startTime;

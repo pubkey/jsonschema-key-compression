@@ -1,0 +1,66 @@
+{
+    "normal": {
+        "firstName": "Corrine",
+        "lastName": "Ziemann",
+        "title": "Ms.",
+        "gender": "f",
+        "zipCode": 75963,
+        "countryCode": "en",
+        "birthYear": 1960,
+        "active": false,
+        "shoppingCartItems": [
+            {
+                "productNumber": 29857,
+                "amount": 1
+            },
+            {
+                "productNumber": 53409,
+                "amount": 6
+            }
+        ]
+    },
+    "compressed": {
+        "|e": "Corrine",
+        "|g": "Ziemann",
+        "|j": "Ms.",
+        "|f": "f",
+        "|k": 75963,
+        "|d": "en",
+        "|c": 1960,
+        "|a": false,
+        "|i": [
+            {
+                "|h": 29857,
+                "|b": 1
+            },
+            {
+                "|h": 53409,
+                "|b": 6
+            }
+        ]
+    },
+    "efficency": {
+        "rawJson": 230,
+        "gzipOnly": 180,
+        "keyCompression": 140,
+        "keyCompressionPlusGzip": 127
+    },
+    "performance": {
+        "notice": "times are in milliseconds",
+        "createCompressionTable": {
+            "amount": 1000,
+            "total": 18.869312999770045,
+            "perInstance": 0.018869312999770044
+        },
+        "compress": {
+            "amount": 1000,
+            "total": 21.48703599907458,
+            "perObject": 0.021487035999074578
+        },
+        "decompress": {
+            "amount": 1000,
+            "total": 27.197336999699473,
+            "perObject": 0.027197336999699475
+        }
+    }
+}
