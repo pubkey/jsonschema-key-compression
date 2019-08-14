@@ -40,7 +40,7 @@
     "faker": "4.1.0",
     "mocha": "6.2.0",
     "node-gzip": "1.1.2",
-    "rimraf": "2.7.0",
+    "rimraf": "2.7.1",
     "ts-node": "8.3.0",
     "tslint": "5.18.0",
     "typescript": "3.5.3"
