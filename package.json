@@ -34,7 +34,7 @@
   "devDependencies": {
     "@types/faker": "4.1.8",
     "@types/mocha": "5.2.7",
-    "@types/node": "12.12.18",
+    "@types/node": "12.12.19",
     "assert": "2.0.0",
     "async-test-util": "1.7.3",
     "faker": "4.1.0",
