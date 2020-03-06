@@ -1,5 +1,4 @@
 import {
-    PlainJsonObject,
     CompressionTable,
     JsonSchema,
     TableType
@@ -19,14 +18,19 @@ export const DEFAULT_COMPRESSION_FLAG = '|';
 
 export function createCompressionTable(
     schema: JsonSchema,
-    compressionFlag: string = DEFAULT_COMPRESSION_FLAG
+    compressionFlag: string = DEFAULT_COMPRESSION_FLAG,
+    ignoreProperties: string[] = []
 ): CompressionTable {
-    const table = _compressedToUncompressedTable(schema);
+    const table = compressedToUncompressedTable(
+        schema,
+        ignoreProperties
+    );
     const compressionTable: CompressionTable = {
         compressedToUncompressed: table,
         uncompressedToCompressed: uncompressedToCompressedTable(
             table,
-            compressionFlag
+            compressionFlag,
+            ignoreProperties
         ),
         compressionFlag
     };
@@ -64,13 +68,16 @@ export function getPropertiesOfSchema(schema: JsonSchema): Set<string> {
     return ret;
 }
 
-export function _compressedToUncompressedTable(schema: JsonSchema): TableType {
+export function compressedToUncompressedTable(
+    schema: JsonSchema,
+    ignoreProperties: string[]
+): TableType {
     const attributes: Set<string> = getPropertiesOfSchema(schema);
     const schemaKeysSorted: string[] = Array.from(attributes).sort(alphabeticCompare);
     const table: TableType = new Map();
     let lastKeyNumber: number = 0;
     schemaKeysSorted
-        .filter(k => k.length > 3)
+        .filter(k => k.length > 3 && !ignoreProperties.includes(k))
         .forEach(k => {
             const compressKey = numberToLetter(lastKeyNumber);
             lastKeyNumber++;
@@ -81,12 +88,15 @@ export function _compressedToUncompressedTable(schema: JsonSchema): TableType {
 
 export function uncompressedToCompressedTable(
     table: TableType,
-    compressionFlag: string
+    compressionFlag: string,
+    ignoreProperties: string[]
 ): TableType {
     const reverseTable: TableType = new Map();
     Array.from(table.keys()).forEach(key => {
         const value = table.get(key) as string;
-        reverseTable.set(compressionFlag + value, key);
+        if (!ignoreProperties.includes(value)) {
+            reverseTable.set(compressionFlag + value, key);
+        }
     });
     return reverseTable;
 }

@@ -3,7 +3,7 @@ import {
 } from 'async-test-util';
 
 import {
-    createCompressionTable
+    createCompressionTable, DEFAULT_COMPRESSION_FLAG
 } from '../../src/index';
 import {
     JsonSchema
@@ -100,6 +100,24 @@ describe('create-compression-table.test.ts', () => {
             const table = createCompressionTable(schema);
             const keys = Array.from(table.compressedToUncompressed.keys());
             assert.ok(keys.includes('description'));
+        });
+    });
+    describe('ingoreProperties', () => {
+        it('should not contain ignored properties', () => {
+            const table = createCompressionTable(
+                getDefaultSchema(),
+                DEFAULT_COMPRESSION_FLAG,
+                [
+                    'active',
+                    'deepNestedAttribute'
+                ]
+            );
+
+            assert.ok(!table.compressedToUncompressed.has('active'));
+            assert.ok(!table.compressedToUncompressed.has('deepNestedAttribute'));
+            const uncompressedValues = Object.values(table.uncompressedToCompressed);
+            assert.ok(!uncompressedValues.includes('active'));
+            assert.ok(!uncompressedValues.includes('deepNestedAttribute'));
         });
     });
 });
