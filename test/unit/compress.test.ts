@@ -246,5 +246,35 @@ describe('compress.test.ts', () => {
                 [{ '|e': 1 }, { '-active': -1 }]
             );
         });
+        it('should work with regex', () => {
+
+            /**
+             * stringify filter to print regexes
+             * @link https://stackoverflow.com/a/38251445
+             */
+            function stringifyFilter(key, value) {
+                if (value instanceof RegExp) {
+                    return value.toString();
+                }
+
+                return value;
+            }
+
+
+            const query: MangoQuery = {
+                selector: {
+                    name: {
+                        $regex: /foobar/i
+                    }
+                }
+            };
+            const table = getDefaultCompressionTable();
+            const compressed = compressQuery(
+                table,
+                query
+            );
+            const compressedString = JSON.stringify(compressed, stringifyFilter);
+            assert.ok(compressedString.includes('foobar'));
+        });
     });
 });

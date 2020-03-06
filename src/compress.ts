@@ -147,12 +147,17 @@ export function compressQuery(
     return ret;
 }
 
+/**
+ * @recursive
+ */
 export function compressQuerySelector(
     table: CompressionTable,
     selector: any
 ): any {
     if (Array.isArray(selector)) {
         return selector.map(item => compressQuerySelector(table, item));
+    } else if (selector instanceof RegExp) {
+        return selector;
     } else if (typeof selector === 'object' && selector !== null) {
         const ret = {};
         Object.keys(selector).forEach(key => {
