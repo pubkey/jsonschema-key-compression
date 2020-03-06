@@ -8,12 +8,13 @@ var util_1 = require("./util");
  * compression-flag, an error will be thrown.
  */
 exports.DEFAULT_COMPRESSION_FLAG = '|';
-function createCompressionTable(schema, compressionFlag) {
+function createCompressionTable(schema, compressionFlag, ignoreProperties) {
     if (compressionFlag === void 0) { compressionFlag = exports.DEFAULT_COMPRESSION_FLAG; }
-    var table = _compressedToUncompressedTable(schema);
+    if (ignoreProperties === void 0) { ignoreProperties = []; }
+    var table = compressedToUncompressedTable(schema, ignoreProperties);
     var compressionTable = {
         compressedToUncompressed: table,
-        uncompressedToCompressed: uncompressedToCompressedTable(table, compressionFlag),
+        uncompressedToCompressed: uncompressedToCompressedTable(table, compressionFlag, ignoreProperties),
         compressionFlag: compressionFlag
     };
     return compressionTable;
@@ -47,13 +48,13 @@ function getPropertiesOfSchema(schema) {
     return ret;
 }
 exports.getPropertiesOfSchema = getPropertiesOfSchema;
-function _compressedToUncompressedTable(schema) {
+function compressedToUncompressedTable(schema, ignoreProperties) {
     var attributes = getPropertiesOfSchema(schema);
     var schemaKeysSorted = Array.from(attributes).sort(util_1.alphabeticCompare);
     var table = new Map();
     var lastKeyNumber = 0;
     schemaKeysSorted
-        .filter(function (k) { return k.length > 3; })
+        .filter(function (k) { return k.length > 3 && !ignoreProperties.includes(k); })
         .forEach(function (k) {
         var compressKey = util_1.numberToLetter(lastKeyNumber);
         lastKeyNumber++;
@@ -61,12 +62,14 @@ function _compressedToUncompressedTable(schema) {
     });
     return table;
 }
-exports._compressedToUncompressedTable = _compressedToUncompressedTable;
-function uncompressedToCompressedTable(table, compressionFlag) {
+exports.compressedToUncompressedTable = compressedToUncompressedTable;
+function uncompressedToCompressedTable(table, compressionFlag, ignoreProperties) {
     var reverseTable = new Map();
     Array.from(table.keys()).forEach(function (key) {
         var value = table.get(key);
-        reverseTable.set(compressionFlag + value, key);
+        if (!ignoreProperties.includes(value)) {
+            reverseTable.set(compressionFlag + value, key);
+        }
     });
     return reverseTable;
 }

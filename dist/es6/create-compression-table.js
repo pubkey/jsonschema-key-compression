@@ -6,11 +6,11 @@ import { numberToLetter, alphabeticCompare } from './util';
  * compression-flag, an error will be thrown.
  */
 export const DEFAULT_COMPRESSION_FLAG = '|';
-export function createCompressionTable(schema, compressionFlag = DEFAULT_COMPRESSION_FLAG) {
-    const table = _compressedToUncompressedTable(schema);
+export function createCompressionTable(schema, compressionFlag = DEFAULT_COMPRESSION_FLAG, ignoreProperties = []) {
+    const table = compressedToUncompressedTable(schema, ignoreProperties);
     const compressionTable = {
         compressedToUncompressed: table,
-        uncompressedToCompressed: uncompressedToCompressedTable(table, compressionFlag),
+        uncompressedToCompressed: uncompressedToCompressedTable(table, compressionFlag, ignoreProperties),
         compressionFlag
     };
     return compressionTable;
@@ -42,13 +42,13 @@ export function getPropertiesOfSchema(schema) {
     }
     return ret;
 }
-export function _compressedToUncompressedTable(schema) {
+export function compressedToUncompressedTable(schema, ignoreProperties) {
     const attributes = getPropertiesOfSchema(schema);
     const schemaKeysSorted = Array.from(attributes).sort(alphabeticCompare);
     const table = new Map();
     let lastKeyNumber = 0;
     schemaKeysSorted
-        .filter(k => k.length > 3)
+        .filter(k => k.length > 3 && !ignoreProperties.includes(k))
         .forEach(k => {
         const compressKey = numberToLetter(lastKeyNumber);
         lastKeyNumber++;
@@ -56,11 +56,13 @@ export function _compressedToUncompressedTable(schema) {
     });
     return table;
 }
-export function uncompressedToCompressedTable(table, compressionFlag) {
+export function uncompressedToCompressedTable(table, compressionFlag, ignoreProperties) {
     const reverseTable = new Map();
     Array.from(table.keys()).forEach(key => {
         const value = table.get(key);
-        reverseTable.set(compressionFlag + value, key);
+        if (!ignoreProperties.includes(value)) {
+            reverseTable.set(compressionFlag + value, key);
+        }
     });
     return reverseTable;
 }
