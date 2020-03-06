@@ -1,6 +1,6 @@
 {
   "name": "jsonschema-key-compression",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Compress json-data based on it's json-schema",
   "author": "pubkey",
   "keywords": [
@@ -11,6 +11,8 @@
   "main": "./dist/es5/index.js",
   "jsnext:main": "./dist/es6/index.js",
   "module": "./dist/es6/index.js",
+  "types": "./src/index.ts",
+  "sideEffects": false,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pubkey/jsonschema-key-compression.git"
