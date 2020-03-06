@@ -5,3 +5,6 @@ perf.md
 .travis.yml
 .gitignore
 tslint.json
+example-object.json
+renovate.json
+.github/
