@@ -96,9 +96,15 @@ export function compressQuery(table, query) {
     }
     return ret;
 }
+/**
+ * @recursive
+ */
 export function compressQuerySelector(table, selector) {
     if (Array.isArray(selector)) {
         return selector.map(item => compressQuerySelector(table, item));
+    }
+    else if (selector instanceof RegExp) {
+        return selector;
     }
     else if (typeof selector === 'object' && selector !== null) {
         const ret = {};
