@@ -252,7 +252,7 @@ describe('compress.test.ts', () => {
              * stringify filter to print regexes
              * @link https://stackoverflow.com/a/38251445
              */
-            function stringifyFilter(key, value) {
+            function stringifyFilter(_key: string, value: any) {
                 if (value instanceof RegExp) {
                     return value.toString();
                 }

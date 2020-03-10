@@ -19,7 +19,7 @@ export function compressObject(
             .map(item => compressObject(table, item));
     } else {
         // object
-        const ret = {};
+        const ret: PlainJsonObject = {};
         Object.keys(obj).forEach(key => {
             const compressedKey = compressedAndFlaggedKey(
                 table,
@@ -122,7 +122,7 @@ export function compressQuery(
     }
 
     if (query.sort) {
-        ret.sort = (query.sort as any).map(item => {
+        ret.sort = (query.sort as any[]).map((item: string | any) => {
             if (typeof item === 'string') {
                 const hasMinus = item.startsWith('-');
                 if (hasMinus) {
@@ -159,7 +159,7 @@ export function compressQuerySelector(
     } else if (selector instanceof RegExp) {
         return selector;
     } else if (typeof selector === 'object' && selector !== null) {
-        const ret = {};
+        const ret: any = {};
         Object.keys(selector).forEach(key => {
             let useKey;
             if (key.startsWith('$')) {

@@ -13,7 +13,7 @@ export function decompressObject(
         return obj.map(item => decompressObject(table, item));
     } else {
         // object
-        const ret = {};
+        const ret: PlainJsonObject = {};
         Object.keys(obj).forEach(key => {
             const decompressed = decompressedKey(
                 table,
