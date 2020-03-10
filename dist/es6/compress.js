@@ -77,7 +77,7 @@ export function compressQuery(table, query) {
             .map(field => compressedPath(table, field));
     }
     if (query.sort) {
-        ret.sort = query.sort.map(item => {
+        ret.sort = query.sort.map((item) => {
             if (typeof item === 'string') {
                 const hasMinus = item.startsWith('-');
                 if (hasMinus) {
