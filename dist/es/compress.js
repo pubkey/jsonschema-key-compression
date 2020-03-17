@@ -8,17 +8,17 @@ export function compressObject(table, obj) {
     else if (Array.isArray(obj)) {
         // array
         return obj
-            .map(item => compressObject(table, item));
+            .map(function (item) { return compressObject(table, item); });
     }
     else {
         // object
-        const ret = {};
-        Object.keys(obj).forEach(key => {
-            const compressedKey = compressedAndFlaggedKey(table, key);
-            const value = compressObject(table, obj[key]);
-            ret[compressedKey] = value;
+        var ret_1 = {};
+        Object.keys(obj).forEach(function (key) {
+            var compressedKey = compressedAndFlaggedKey(table, key);
+            var value = compressObject(table, obj[key]);
+            ret_1[compressedKey] = value;
         });
-        return ret;
+        return ret_1;
     }
 }
 /**
@@ -29,10 +29,10 @@ export function compressObject(table, obj) {
  * - ouput: '|a[1].|b'
  */
 export function compressedPath(table, path) {
-    const splitted = path.split('.');
+    var splitted = path.split('.');
     return splitted
-        .map(subKey => {
-        const compressedKey = compressedAndFlaggedKey(table, subKey);
+        .map(function (subKey) {
+        var compressedKey = compressedAndFlaggedKey(table, subKey);
         return compressedKey;
     }).join('.');
 }
@@ -48,14 +48,14 @@ export function compressedAndFlaggedKey(table, key) {
      * keys could be array-accessors like myArray[4]
      * we have to split and readd the squared brackets value
      */
-    const splitSquaredBrackets = key.split('[');
+    var splitSquaredBrackets = key.split('[');
     key = splitSquaredBrackets.shift();
-    const compressedKey = table.compressedToUncompressed.get(key);
+    var compressedKey = table.compressedToUncompressed.get(key);
     if (!compressedKey) {
         return key;
     }
     else {
-        const readdSquared = splitSquaredBrackets.length ? '[' + splitSquaredBrackets.join('[') : '';
+        var readdSquared = splitSquaredBrackets.length ? '[' + splitSquaredBrackets.join('[') : '';
         return table.compressionFlag + compressedKey + readdSquared;
     }
 }
@@ -65,7 +65,7 @@ export function compressedAndFlaggedKey(table, key) {
  * in a database where all documents are compressed
  */
 export function compressQuery(table, query) {
-    const ret = {
+    var ret = {
         selector: compressQuerySelector(table, query.selector)
     };
     if (query.skip)
@@ -74,16 +74,16 @@ export function compressQuery(table, query) {
         ret.limit = query.limit;
     if (query.fields) {
         ret.fields = query.fields
-            .map(field => compressedPath(table, field));
+            .map(function (field) { return compressedPath(table, field); });
     }
     if (query.sort) {
-        ret.sort = query.sort.map((item) => {
+        ret.sort = query.sort.map(function (item) {
             if (typeof item === 'string') {
-                const hasMinus = item.startsWith('-');
+                var hasMinus = item.startsWith('-');
                 if (hasMinus) {
                     item = item.substr(1);
                 }
-                let compressedField = compressedPath(table, item);
+                var compressedField = compressedPath(table, item);
                 if (hasMinus) {
                     compressedField = '-' + compressedField;
                 }
@@ -101,15 +101,15 @@ export function compressQuery(table, query) {
  */
 export function compressQuerySelector(table, selector) {
     if (Array.isArray(selector)) {
-        return selector.map(item => compressQuerySelector(table, item));
+        return selector.map(function (item) { return compressQuerySelector(table, item); });
     }
     else if (selector instanceof RegExp) {
         return selector;
     }
     else if (typeof selector === 'object' && selector !== null) {
-        const ret = {};
-        Object.keys(selector).forEach(key => {
-            let useKey;
+        var ret_2 = {};
+        Object.keys(selector).forEach(function (key) {
+            var useKey;
             if (key.startsWith('$')) {
                 // operator
                 useKey = key;
@@ -118,9 +118,9 @@ export function compressQuerySelector(table, selector) {
                 // property path
                 useKey = compressedPath(table, key);
             }
-            ret[useKey] = compressQuerySelector(table, selector[key]);
+            ret_2[useKey] = compressQuerySelector(table, selector[key]);
         });
-        return ret;
+        return ret_2;
     }
     else {
         return selector;

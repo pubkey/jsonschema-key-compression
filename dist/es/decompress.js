@@ -3,17 +3,17 @@ export function decompressObject(table, obj) {
         return obj;
     else if (Array.isArray(obj)) {
         // array
-        return obj.map(item => decompressObject(table, item));
+        return obj.map(function (item) { return decompressObject(table, item); });
     }
     else {
         // object
-        const ret = {};
-        Object.keys(obj).forEach(key => {
-            const decompressed = decompressedKey(table, key);
-            const value = decompressObject(table, obj[key]);
-            ret[decompressed] = value;
+        var ret_1 = {};
+        Object.keys(obj).forEach(function (key) {
+            var decompressed = decompressedKey(table, key);
+            var value = decompressObject(table, obj[key]);
+            ret_1[decompressed] = value;
         });
-        return ret;
+        return ret_1;
     }
 }
 /**
@@ -24,10 +24,10 @@ export function decompressObject(table, obj) {
  * - output: 'name.firstName'
  */
 export function decompressedPath(table, path) {
-    const splitted = path.split('.');
+    var splitted = path.split('.');
     return splitted
-        .map(subKey => {
-        const compressedKey = decompressedKey(table, subKey);
+        .map(function (subKey) {
+        var compressedKey = decompressedKey(table, subKey);
         return compressedKey;
     }).join('.');
 }
@@ -36,14 +36,14 @@ export function decompressedKey(table, key) {
         * keys could be array-accessors like myArray[4]
         * we have to split and readd the squared brackets value
         */
-    const splitSquaredBrackets = key.split('[');
+    var splitSquaredBrackets = key.split('[');
     key = splitSquaredBrackets.shift();
-    const decompressed = table.uncompressedToCompressed.get(key);
+    var decompressed = table.uncompressedToCompressed.get(key);
     if (!decompressed) {
         return key;
     }
     else {
-        const readdSquared = splitSquaredBrackets.length ? '[' + splitSquaredBrackets.join('[') : '';
+        var readdSquared = splitSquaredBrackets.length ? '[' + splitSquaredBrackets.join('[') : '';
         return decompressed + readdSquared;
     }
 }

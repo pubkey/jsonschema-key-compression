@@ -5,34 +5,36 @@ import { numberToLetter, alphabeticCompare } from './util';
  * If an object is compressed, where one attribute starts with the
  * compression-flag, an error will be thrown.
  */
-export const DEFAULT_COMPRESSION_FLAG = '|';
-export function createCompressionTable(schema, compressionFlag = DEFAULT_COMPRESSION_FLAG, ignoreProperties = []) {
-    const table = compressedToUncompressedTable(schema, ignoreProperties);
-    const compressionTable = {
+export var DEFAULT_COMPRESSION_FLAG = '|';
+export function createCompressionTable(schema, compressionFlag, ignoreProperties) {
+    if (compressionFlag === void 0) { compressionFlag = DEFAULT_COMPRESSION_FLAG; }
+    if (ignoreProperties === void 0) { ignoreProperties = []; }
+    var table = compressedToUncompressedTable(schema, ignoreProperties);
+    var compressionTable = {
         compressedToUncompressed: table,
         uncompressedToCompressed: uncompressedToCompressedTable(table, compressionFlag, ignoreProperties),
-        compressionFlag
+        compressionFlag: compressionFlag
     };
     return compressionTable;
 }
 export function getPropertiesOfSchema(schema) {
-    const ret = new Set();
+    var ret = new Set();
     function addSchema(innerSchema) {
-        const keys = getPropertiesOfSchema(innerSchema);
-        Array.from(keys).forEach(k => ret.add(k));
+        var keys = getPropertiesOfSchema(innerSchema);
+        Array.from(keys).forEach(function (k) { return ret.add(k); });
     }
     if (schema.properties) {
-        Object.keys(schema.properties).forEach(property => {
+        Object.keys(schema.properties).forEach(function (property) {
             ret.add(property);
             if (!schema.properties)
                 return;
-            const deepSchema = schema.properties[property];
+            var deepSchema = schema.properties[property];
             addSchema(deepSchema);
         });
     }
     if (schema.items) {
         if (Array.isArray(schema.items)) {
-            schema.items.forEach(subSchema => {
+            schema.items.forEach(function (subSchema) {
                 addSchema(subSchema);
             });
         }
@@ -43,23 +45,23 @@ export function getPropertiesOfSchema(schema) {
     return ret;
 }
 export function compressedToUncompressedTable(schema, ignoreProperties) {
-    const attributes = getPropertiesOfSchema(schema);
-    const schemaKeysSorted = Array.from(attributes).sort(alphabeticCompare);
-    const table = new Map();
-    let lastKeyNumber = 0;
+    var attributes = getPropertiesOfSchema(schema);
+    var schemaKeysSorted = Array.from(attributes).sort(alphabeticCompare);
+    var table = new Map();
+    var lastKeyNumber = 0;
     schemaKeysSorted
-        .filter(k => k.length > 3 && !ignoreProperties.includes(k))
-        .forEach(k => {
-        const compressKey = numberToLetter(lastKeyNumber);
+        .filter(function (k) { return k.length > 3 && !ignoreProperties.includes(k); })
+        .forEach(function (k) {
+        var compressKey = numberToLetter(lastKeyNumber);
         lastKeyNumber++;
         table.set(k, compressKey);
     });
     return table;
 }
 export function uncompressedToCompressedTable(table, compressionFlag, ignoreProperties) {
-    const reverseTable = new Map();
-    Array.from(table.keys()).forEach(key => {
-        const value = table.get(key);
+    var reverseTable = new Map();
+    Array.from(table.keys()).forEach(function (key) {
+        var value = table.get(key);
         if (!ignoreProperties.includes(value)) {
             reverseTable.set(compressionFlag + value, key);
         }
