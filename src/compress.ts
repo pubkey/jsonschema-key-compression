@@ -145,7 +145,7 @@ export function compressQuery(
                 }
             });
         } else {
-            const compressedSort: {} = {};
+            const compressedSort: any = {};
             Object.entries(query.sort).forEach(([key, direction]) => {
                 const compressedField = compressedPath(
                     table,
