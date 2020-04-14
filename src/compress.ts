@@ -122,27 +122,39 @@ export function compressQuery(
     }
 
     if (query.sort) {
-        ret.sort = (query.sort as any[]).map((item: string | any) => {
-            if (typeof item === 'string') {
-                const hasMinus = item.startsWith('-');
-                if (hasMinus) {
-                    item = item.substr(1);
+        if (Array.isArray(query.sort)) {
+            ret.sort = (query.sort as any[]).map((item: string | any) => {
+                if (typeof item === 'string') {
+                    const hasMinus = item.startsWith('-');
+                    if (hasMinus) {
+                        item = item.substr(1);
+                    }
+                    let compressedField = compressedPath(
+                        table,
+                        item
+                    );
+                    if (hasMinus) {
+                        compressedField = '-' + compressedField;
+                    }
+                    return compressedField;
+                } else {
+                    return compressQuerySelector(
+                        table,
+                        item
+                    );
                 }
-                let compressedField = compressedPath(
+            });
+        } else {
+            const compressedSort: {} = {};
+            Object.entries(query.sort).forEach(([key, direction]) => {
+                const compressedField = compressedPath(
                     table,
-                    item
+                    key
                 );
-                if (hasMinus) {
-                    compressedField = '-' + compressedField;
-                }
-                return compressedField;
-            } else {
-                return compressQuerySelector(
-                    table,
-                    item
-                );
-            }
-        });
+                compressedSort[compressedField] = direction;
+            });
+            ret.sort = compressedSort;
+        }
     }
     return ret;
 }

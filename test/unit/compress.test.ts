@@ -232,7 +232,7 @@ describe('compress.test.ts', () => {
                 selector: {},
                 sort: [
                     { 'name': 1 },
-                    { '-active': -1 }
+                    { 'active': -1 }
                 ]
             };
 
@@ -243,7 +243,27 @@ describe('compress.test.ts', () => {
             );
             assert.deepEqual(
                 compressed.sort,
-                [{ '|e': 1 }, { '-active': -1 }]
+                [{ '|e': 1 }, { '|a': -1 }]
+            );
+        });
+        it('should work with sort-object', () => {
+            const query: MangoQuery = {
+                selector: {},
+                sort: {
+                    name: 'asc',
+                    active: 'desc'
+                }
+            };
+
+            const table = getDefaultCompressionTable();
+            const compressed = compressQuery(
+                table,
+                query
+            );
+
+            assert.deepStrictEqual(
+                compressed.sort,
+                { '|e': 'asc', '|a': 'desc' }
             );
         });
         it('should work with regex', () => {
