@@ -1,3 +1,19 @@
+var __read = (this && this.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
 /**
  * compress the keys of an object via the compression-table
  * @recursive
@@ -77,22 +93,33 @@ export function compressQuery(table, query) {
             .map(function (field) { return compressedPath(table, field); });
     }
     if (query.sort) {
-        ret.sort = query.sort.map(function (item) {
-            if (typeof item === 'string') {
-                var hasMinus = item.startsWith('-');
-                if (hasMinus) {
-                    item = item.substr(1);
+        if (Array.isArray(query.sort)) {
+            ret.sort = query.sort.map(function (item) {
+                if (typeof item === 'string') {
+                    var hasMinus = item.startsWith('-');
+                    if (hasMinus) {
+                        item = item.substr(1);
+                    }
+                    var compressedField = compressedPath(table, item);
+                    if (hasMinus) {
+                        compressedField = '-' + compressedField;
+                    }
+                    return compressedField;
                 }
-                var compressedField = compressedPath(table, item);
-                if (hasMinus) {
-                    compressedField = '-' + compressedField;
+                else {
+                    return compressQuerySelector(table, item);
                 }
-                return compressedField;
-            }
-            else {
-                return compressQuerySelector(table, item);
-            }
-        });
+            });
+        }
+        else {
+            var compressedSort_1 = {};
+            Object.entries(query.sort).forEach(function (_a) {
+                var _b = __read(_a, 2), key = _b[0], direction = _b[1];
+                var compressedField = compressedPath(table, key);
+                compressedSort_1[compressedField] = direction;
+            });
+            ret.sort = compressedSort_1;
+        }
     }
     return ret;
 }
