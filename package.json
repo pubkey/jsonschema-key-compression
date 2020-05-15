@@ -34,7 +34,7 @@
     "dev": "mocha -r ts-node/register test/unit/index.test.ts  --watch --watch-extensions ts"
   },
   "devDependencies": {
-    "@types/faker": "4.1.11",
+    "@types/faker": "4.1.12",
     "@types/mocha": "7.0.2",
     "@types/node": "13.13.5",
     "@types/node-gzip": "1.1.0",
