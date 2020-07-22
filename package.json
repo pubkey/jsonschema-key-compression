@@ -36,7 +36,7 @@
   "devDependencies": {
     "@types/faker": "4.1.12",
     "@types/mocha": "8.0.0",
-    "@types/node": "13.13.5",
+    "@types/node": "14.0.24",
     "@types/node-gzip": "1.1.0",
     "assert": "2.0.0",
     "async-test-util": "1.7.3",
@@ -46,7 +46,7 @@
     "rimraf": "3.0.2",
     "ts-node": "8.10.2",
     "tslint": "6.1.2",
-    "typescript": "3.8.3"
+    "typescript": "3.9.7"
   },
   "dependencies": {}
 }

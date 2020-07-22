@@ -1,8 +1,8 @@
-import {
+import type {
     CompressionTable,
     JsonSchema,
     TableType
-} from '../types/index';
+} from './types';
 import {
     numberToLetter,
     alphabeticCompare

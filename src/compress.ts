@@ -1,8 +1,8 @@
-import {
+import type {
     PlainJsonObject,
     CompressionTable,
     MangoQuery
-} from '../types/index';
+} from './types';
 
 /**
  * compress the keys of an object via the compression-table

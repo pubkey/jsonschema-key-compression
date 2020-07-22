@@ -2,11 +2,11 @@ import {
     randomString,
     randomBoolean
 } from 'async-test-util';
-import {
+import type {
     JsonSchema,
     PlainJsonObject,
     CompressionTable
-} from '../../types/index';
+} from '../../src/types';
 
 import {
     createCompressionTable,

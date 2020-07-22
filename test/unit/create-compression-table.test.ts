@@ -3,11 +3,12 @@ import {
 } from 'async-test-util';
 
 import {
-    createCompressionTable, DEFAULT_COMPRESSION_FLAG
+    createCompressionTable,
+    DEFAULT_COMPRESSION_FLAG
 } from '../../src/index';
-import {
+import type {
     JsonSchema
-} from '../../types/index';
+} from '../../src/types';
 
 import {
     getDefaultSchema
@@ -24,7 +25,7 @@ describe('create-compression-table.test.ts', () => {
         it('should create the same tables when called twice', () => {
             const table1 = createCompressionTable(getDefaultSchema());
             const table2 = createCompressionTable(getDefaultSchema());
-            assert.deepEqual(table1, table2);
+            assert.deepStrictEqual(table1, table2);
         });
     });
     describe('.compressedToUncompressed', () => {
@@ -60,7 +61,7 @@ describe('create-compression-table.test.ts', () => {
             const table = createCompressionTable(schemaWithDuplicates);
             const keys = Array.from(table.compressedToUncompressed.keys());
             const unique = [...new Set(keys)];
-            assert.deepEqual(keys, unique);
+            assert.deepStrictEqual(keys, unique);
         });
         it('keys with 3 or less chars shell not be compressed', () => {
             const schemaWithShort: JsonSchema = {
@@ -81,16 +82,16 @@ describe('create-compression-table.test.ts', () => {
             };
             const table = createCompressionTable(schemaWithShort);
             const keys = Array.from(table.compressedToUncompressed.keys());
-            assert.equal(keys.includes('_id'), false);
+            assert.strictEqual(keys.includes('_id'), false);
         });
         it('should not contain json-schema keywords', () => {
             const table = createCompressionTable(getDefaultSchema());
             const keys = Array.from(table.compressedToUncompressed.keys());
-            assert.equal(keys.includes('required'), false);
-            assert.equal(keys.includes('items'), false);
-            assert.equal(keys.includes('description'), false);
-            assert.equal(keys.includes('properties'), false);
-            assert.equal(keys.includes('type'), false);
+            assert.strictEqual(keys.includes('required'), false);
+            assert.strictEqual(keys.includes('items'), false);
+            assert.strictEqual(keys.includes('description'), false);
+            assert.strictEqual(keys.includes('properties'), false);
+            assert.strictEqual(keys.includes('type'), false);
         });
         it('should contain json-schema keywords if used as property', () => {
             const schema = getDefaultSchema() as any;

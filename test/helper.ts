@@ -7,7 +7,7 @@ import {
 import {
     JsonSchema,
     PlainJsonObject
-} from '../types';
+} from '../src/types';
 
 import {
     name

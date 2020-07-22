@@ -1,9 +1,10 @@
-export * from '../types/index.d';
+export * from './types';
 
 export {
     createCompressionTable,
     DEFAULT_COMPRESSION_FLAG
 } from './create-compression-table';
+
 export {
     compressObject,
     compressedPath,

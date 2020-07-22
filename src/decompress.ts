@@ -1,7 +1,7 @@
-import {
+import type {
     PlainJsonObject,
     CompressionTable
-} from '../types/index';
+} from './types';
 
 export function decompressObject(
     table: CompressionTable,
