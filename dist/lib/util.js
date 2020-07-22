@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.alphabeticCompare = exports.numberToLetter = void 0;
 /**
  * @link https://de.wikipedia.org/wiki/Base58
  * this does not start with the numbers to generate valid variable-names

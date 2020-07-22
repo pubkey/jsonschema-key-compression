@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.decompressedKey = exports.decompressedPath = exports.decompressObject = void 0;
 function decompressObject(table, obj) {
     if (typeof obj !== 'object' || obj === null)
         return obj;

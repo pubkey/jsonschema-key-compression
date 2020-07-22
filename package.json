@@ -1,12 +1,14 @@
 {
   "name": "jsonschema-key-compression",
-  "version": "1.1.1",
-  "description": "Compress json-data based on it's json-schema",
+  "version": "1.2.0",
+  "description": "Compress json-data based on its json-schema",
   "author": "pubkey",
   "keywords": [
     "json",
     "compression",
-    "jsonschema"
+    "jsonschema",
+    "json-schema",
+    "compress"
   ],
   "main": "./dist/lib/index.js",
   "jsnext:main": "./dist/es/index.js",

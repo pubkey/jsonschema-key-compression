@@ -16,6 +16,7 @@ var __read = (this && this.__read) || function (o, n) {
     return ar;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.compressQuerySelector = exports.compressQuery = exports.compressedAndFlaggedKey = exports.throwErrorIfCompressionFlagUsed = exports.compressedPath = exports.compressObject = void 0;
 /**
  * compress the keys of an object via the compression-table
  * @recursive
