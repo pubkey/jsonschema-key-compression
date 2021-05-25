@@ -1,4 +1,13 @@
-export * from './types';
+export type {
+    TableType,
+    CompressionTable,
+    PlainJsonObjectNotArray,
+    PlainJsonObject,
+    SortDirection,
+    MangoQuery,
+    JsonSchemaTypes,
+    JsonSchema
+} from './types';
 
 export {
     createCompressionTable,
