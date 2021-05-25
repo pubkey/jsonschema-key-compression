@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.1.5
+        with:
+          node-version: 16.2.0
+
+      - name: install
+        run: npm install --silent
+
+      - name: build
+        run: npm run build
+
+      - name: test
+        run: npm run test
+
+      - name: test:performance
+        run: npm run test:performance
+
+      - name: efficiency
+        run: npm run test:efficiency
+
+      - name: lint
+        run: npm run lint
