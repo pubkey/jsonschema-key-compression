@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.alphabeticCompare = exports.numberToLetter = void 0;
+exports.flatClone = exports.alphabeticCompare = exports.numberToLetter = void 0;
 /**
  * @link https://de.wikipedia.org/wiki/Base58
  * this does not start with the numbers to generate valid variable-names
@@ -24,7 +24,7 @@ function numberToLetter(nr) {
         .join('');
 }
 exports.numberToLetter = numberToLetter;
-exports.alphabeticCompare = function (a, b) {
+var alphabeticCompare = function (a, b) {
     if (a < b) {
         return -1;
     }
@@ -33,4 +33,14 @@ exports.alphabeticCompare = function (a, b) {
     }
     return 0;
 };
+exports.alphabeticCompare = alphabeticCompare;
+/**
+ * does a flat copy on the objects,
+ * is about 3 times faster then using deepClone
+ * @link https://jsperf.com/object-rest-spread-vs-clone/2
+ */
+function flatClone(obj) {
+    return Object.assign({}, obj);
+}
+exports.flatClone = flatClone;
 //# sourceMappingURL=util.js.map

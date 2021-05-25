@@ -40,7 +40,7 @@ export function createCompressionTable(
 
 /**
  * Returns a list of all property names that occur in the schema.
- * @returns {Set<string>} to ensure uniqueness.
+ * @returns Set of strings to ensure uniqueness.
  */
 export function getPropertiesOfSchema(schema: JsonSchema): Set<string> {
     const ret: Set<string> = new Set();

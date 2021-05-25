@@ -17,6 +17,10 @@ export function createCompressionTable(schema, compressionFlag, ignoreProperties
     };
     return compressionTable;
 }
+/**
+ * Returns a list of all property names that occur in the schema.
+ * @returns Set of strings to ensure uniqueness.
+ */
 export function getPropertiesOfSchema(schema) {
     var ret = new Set();
     function addSchema(innerSchema) {
@@ -26,8 +30,9 @@ export function getPropertiesOfSchema(schema) {
     if (schema.properties) {
         Object.keys(schema.properties).forEach(function (property) {
             ret.add(property);
-            if (!schema.properties)
+            if (!schema.properties) {
                 return;
+            }
             var deepSchema = schema.properties[property];
             addSchema(deepSchema);
         });
