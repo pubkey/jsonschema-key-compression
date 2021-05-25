@@ -188,3 +188,47 @@ const compressed = compressQuery(
     }
 );
 ```
+### createCompressedJsonSchema
+
+Transforms a json-schema into a compressed form, so that it can be used to validate compressed objects.
+
+```js
+import {
+    createCompressedJsonSchema
+} from 'jsonschema-key-compression';
+
+
+const schema = {
+    type: 'object',
+    properties: {
+        firstName: {
+            type: 'string'
+        }
+    },
+    required: [
+        'firstName'
+    ]
+}
+
+const compressedSchema = createCompressedJsonSchema(
+    compressionTable,
+    schema
+);
+
+console.dir(compressedSchema);
+
+/**
+{
+    type: 'object',
+    properties: {
+        |a: {
+            type: 'string'
+        }
+    },
+    required: [
+        '|a'
+    ]
+}
+ */
+
+```

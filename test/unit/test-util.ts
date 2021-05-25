@@ -56,8 +56,8 @@ export function getDefaultSchema(): JsonSchema {
             }
         },
         required: [
-            'firstName',
-            'lastName'
+            'name',
+            'nestedObject'
         ]
     };
     return schema;

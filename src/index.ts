@@ -25,3 +25,7 @@ export {
     decompressObject,
     decompressedPath,
 } from './decompress';
+
+export {
+    createCompressedJsonSchema
+} from './create-compressed-json-schema';

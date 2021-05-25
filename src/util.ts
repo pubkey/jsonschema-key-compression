@@ -34,3 +34,12 @@ export const alphabeticCompare: SortComparator = (a, b) => {
     }
     return 0;
 };
+
+/**
+ * does a flat copy on the objects,
+ * is about 3 times faster then using deepClone
+ * @link https://jsperf.com/object-rest-spread-vs-clone/2
+ */
+export function flatClone<T>(obj: T): T {
+    return Object.assign({}, obj);
+}
