@@ -36,13 +36,13 @@
     "dev": "mocha -r ts-node/register test/unit/index.test.ts  --watch --watch-extensions ts"
   },
   "devDependencies": {
-    "@types/faker": "5.1.4",
+    "@types/faker": "5.5.5",
     "@types/mocha": "8.2.2",
     "@types/node": "14.17.1",
     "@types/node-gzip": "1.1.0",
     "assert": "2.0.0",
     "async-test-util": "1.7.3",
-    "faker": "5.1.0",
+    "faker": "5.5.3",
     "mocha": "8.4.0",
     "node-gzip": "1.1.2",
     "rimraf": "3.0.2",
