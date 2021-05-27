@@ -51,12 +51,11 @@ export function getPropertiesOfSchema(schema: JsonSchema): Set<string> {
     }
 
     if (schema.properties) {
-        Object.keys(schema.properties).forEach(property => {
+        Object.entries(schema.properties).forEach(([property, deepSchema]) => {
             ret.add(property);
             if (!schema.properties) {
                 return;
             }
-            const deepSchema = schema.properties[property];
             addSchema(deepSchema);
         });
     }

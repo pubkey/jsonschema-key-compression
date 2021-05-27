@@ -57,8 +57,8 @@ describe('performance.test.js', () => {
             () => randomObject()
         );
 
-        for (let i = 0; i < objects.length; i++) {
-            const compressed = compressObject(table, objects[i]);
+        for (const object of objects) {
+            const compressed = compressObject(table, object);
             // console.dir(compressed);
         }
 
@@ -75,9 +75,9 @@ describe('performance.test.js', () => {
             .map(obj => compressObject(table, obj));
 
         const x: any[] = [];
-        for (let i = 0; i < compressedObjects.length; i++) {
+        for (const compressedObject of compressedObjects) {
             // console.dir(compressedObjects[i]);
-            const decompressed = decompressObject(table, compressedObjects[i]);
+            const decompressed = decompressObject(table, compressedObject);
             x.push(decompressed);
             // console.dir(decompressed);
         }

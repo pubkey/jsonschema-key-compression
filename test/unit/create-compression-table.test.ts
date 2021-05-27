@@ -33,7 +33,7 @@ describe('create-compression-table.test.ts', () => {
             const table = createCompressionTable(getDefaultSchema());
             assert.ok(table);
             const keys = Array.from(table.compressedToUncompressed.keys());
-            assert.ok(keys[0] < keys[1]);
+            assert.ok(keys[0] && keys[1] && keys[0] < keys[1]);
         });
         it('should contain the deepNested key', () => {
             const table = createCompressionTable(getDefaultSchema());

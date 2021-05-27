@@ -10,6 +10,7 @@
         "noImplicitThis": true,
         "suppressImplicitAnyIndexErrors": true,
         "downlevelIteration": true,
+        "noUncheckedIndexedAccess": true,
         "moduleResolution": "node",
         "target": "es5",
         "outDir": "./dist/lib",
