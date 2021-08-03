@@ -12,6 +12,7 @@
         "downlevelIteration": true,
         "noUncheckedIndexedAccess": true,
         "moduleResolution": "node",
+        "declaration": true,
         "target": "es5",
         "outDir": "./dist/lib",
         "lib": [

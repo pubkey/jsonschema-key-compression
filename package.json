@@ -13,7 +13,7 @@
   "main": "./dist/lib/index.js",
   "jsnext:main": "./dist/es/index.js",
   "module": "./dist/es/index.js",
-  "types": "./src/index.ts",
+  "types": "./dist/es/index.d.ts",
   "sideEffects": false,
   "repository": {
     "type": "git",
