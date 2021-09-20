@@ -3,5 +3,6 @@
     "config:base"
   ],
   "statusCheckVerify": true,
-  "automerge": true
+  "automerge": true,
+  "dependencyDashboard": false
 }
