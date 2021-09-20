@@ -27,8 +27,8 @@
   "scripts": {
     "lint": "tslint --project .",
     "lint:fix": "tslint --project . --fix",
-    "transpile": "tsc -p ./ && echo '# transpile es5 (require) sucess!'",
-    "transpile:es": "tsc -p ./ --target ES5 --module ES6 --outDir ./dist/es && echo '# transpile es6 (modules) sucess!'",
+    "transpile": "tsc -p ./ && copyfiles -u 1 \"src/**/*.d.ts\" dist/lib && echo '# transpile es5 (require) sucess!'",
+    "transpile:es": "tsc -p ./ --target ES5 --module ES6 --outDir ./dist/es && copyfiles -u 1 \"src/**/*.d.ts\" dist/es && echo '# transpile es6 (modules) sucess!'",
     "build": "rimraf -r ./dist && npm run transpile && npm run transpile:es",
     "test": "mocha -r ts-node/register test/unit/index.test.ts",
     "test:performance": "mocha -r ts-node/register --bail --exit ./test/performance.test.ts",
@@ -42,6 +42,7 @@
     "@types/node-gzip": "1.1.0",
     "assert": "2.0.0",
     "async-test-util": "1.7.3",
+    "copyfiles": "2.4.1",
     "faker": "5.5.3",
     "mocha": "9.0.3",
     "node-gzip": "1.1.2",
