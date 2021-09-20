@@ -78,7 +78,7 @@ function compressedToUncompressedTable(schema, ignoreProperties) {
     schemaKeysSorted
         .filter(function (k) { return k.length > 3 && !ignoreProperties.includes(k); })
         .forEach(function (k) {
-        var compressKey = util_1.numberToLetter(lastKeyNumber);
+        var compressKey = (0, util_1.numberToLetter)(lastKeyNumber);
         lastKeyNumber++;
         table.set(k, compressKey);
     });

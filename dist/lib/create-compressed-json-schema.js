@@ -21,7 +21,7 @@ var util_1 = require("./util");
 var compress_1 = require("./compress");
 function createCompressedJsonSchema(compressionTable, schema) {
     if (schema.type === 'array' && schema.items) {
-        var cloned = util_1.flatClone(schema);
+        var cloned = (0, util_1.flatClone)(schema);
         if (Array.isArray(schema.items)) {
             var newItems = schema.items.map(function (item) { return createCompressedJsonSchema(compressionTable, item); });
             cloned.items = newItems;
@@ -33,18 +33,18 @@ function createCompressedJsonSchema(compressionTable, schema) {
         return cloned;
     }
     else if (schema.type === 'object' && schema.properties) {
-        var cloned = util_1.flatClone(schema);
+        var cloned = (0, util_1.flatClone)(schema);
         // compress all property names
         var newProperties_1 = {};
         Object.entries(schema.properties).forEach(function (_a) {
             var _b = __read(_a, 2), key = _b[0], property = _b[1];
-            var compressedKey = compress_1.compressedPath(compressionTable, key);
+            var compressedKey = (0, compress_1.compressedPath)(compressionTable, key);
             newProperties_1[compressedKey] = createCompressedJsonSchema(compressionTable, property);
         });
         cloned.properties = newProperties_1;
         // also compress the required array
         if (cloned.required) {
-            cloned.required = cloned.required.map(function (key) { return compress_1.compressedPath(compressionTable, key); });
+            cloned.required = cloned.required.map(function (key) { return (0, compress_1.compressedPath)(compressionTable, key); });
         }
         return cloned;
     }
