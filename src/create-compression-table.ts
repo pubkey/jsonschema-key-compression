@@ -51,7 +51,9 @@ export function getPropertiesOfSchema(schema: JsonSchema): Set<string> {
     }
 
     if (schema.properties) {
-        Object.entries(schema.properties).forEach(([property, deepSchema]) => {
+        // do not use Object.entries, it is transpiled shitty
+        Object.keys(schema.properties).forEach(property => {
+            const deepSchema = (schema as any).properties[property];
             ret.add(property);
             if (!schema.properties) {
                 return;

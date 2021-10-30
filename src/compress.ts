@@ -146,7 +146,9 @@ export function compressQuery(
             });
         } else {
             const compressedSort: any = {};
-            Object.entries(query.sort).forEach(([key, direction]) => {
+            // do not use Object.entries, it is transpiled shitty
+            Object.keys(query.sort).forEach(key => {
+                const direction = (query as any).sort[key];
                 const compressedField = compressedPath(
                     table,
                     key

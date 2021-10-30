@@ -32,7 +32,9 @@ export function createCompressedJsonSchema(
         const newProperties: {
             [k: string]: JsonSchema
         } = {};
-        Object.entries(schema.properties).forEach(([key, property]) => {
+        // do not use Object.entries, it is transpiled shitty
+        Object.keys(schema.properties).forEach(key => {
+            const property = (schema as any).properties[key];
             const compressedKey = compressedPath(compressionTable, key);
             newProperties[compressedKey] = createCompressedJsonSchema(compressionTable, property);
         });
