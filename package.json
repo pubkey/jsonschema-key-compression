@@ -41,7 +41,7 @@
     "@types/node": "20.8.8",
     "@types/node-gzip": "1.1.2",
     "assert": "2.1.0",
-    "async-test-util": "2.2.0",
+    "async-test-util": "2.2.1",
     "copyfiles": "2.4.1",
     "faker": "5.5.3",
     "mocha": "10.2.0",
