@@ -1,6 +1,6 @@
 {
   "name": "jsonschema-key-compression",
-  "version": "1.6.1",
+  "version": "1.7.0",
   "description": "Compress json-data based on its json-schema",
   "author": "pubkey",
   "keywords": [

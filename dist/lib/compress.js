@@ -15,13 +15,15 @@ function compressObject(table, obj) {
     }
     else {
         // object
-        var ret_1 = {};
-        Object.keys(obj).forEach(function (key) {
+        var ret = {};
+        var keys = Object.keys(obj);
+        for (var index = 0; index < keys.length; index++) {
+            var key = keys[index];
             var compressedKey = compressedAndFlaggedKey(table, key);
             var value = compressObject(table, obj[key]);
-            ret_1[compressedKey] = value;
-        });
-        return ret_1;
+            ret[compressedKey] = value;
+        }
+        return ret;
     }
 }
 exports.compressObject = compressObject;
@@ -52,11 +54,11 @@ function compressedAndFlaggedKey(table, key) {
     throwErrorIfCompressionFlagUsed(table, key);
     /**
      * keys could be array-accessors like myArray[4]
-     * we have to split and readd the squared brackets value
+     * we have to split and read the squared brackets value
      */
     var splitSquaredBrackets = key.split('[');
-    key = splitSquaredBrackets.shift();
-    var compressedKey = table.compressedToUncompressed.get(key);
+    var plainKey = splitSquaredBrackets.shift();
+    var compressedKey = table.compressedToUncompressed.get(plainKey);
     if (!compressedKey) {
         return key;
     }
@@ -127,7 +129,7 @@ function compressQuerySelector(table, selector) {
         return selector;
     }
     else if (typeof selector === 'object' && selector !== null) {
-        var ret_2 = {};
+        var ret_1 = {};
         Object.keys(selector).forEach(function (key) {
             var useKey;
             if (key.startsWith('$')) {
@@ -138,9 +140,9 @@ function compressQuerySelector(table, selector) {
                 // property path
                 useKey = compressedPath(table, key);
             }
-            ret_2[useKey] = compressQuerySelector(table, selector[key]);
+            ret_1[useKey] = compressQuerySelector(table, selector[key]);
         });
-        return ret_2;
+        return ret_1;
     }
     else {
         return selector;

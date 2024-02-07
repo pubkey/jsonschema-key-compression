@@ -7,13 +7,15 @@ export function decompressObject(table, obj) {
     }
     else {
         // object
-        var ret_1 = {};
-        Object.keys(obj).forEach(function (key) {
+        var ret = {};
+        var keys = Object.keys(obj);
+        for (var index = 0; index < keys.length; index++) {
+            var key = keys[index];
             var decompressed = decompressedKey(table, key);
             var value = decompressObject(table, obj[key]);
-            ret_1[decompressed] = value;
-        });
-        return ret_1;
+            ret[decompressed] = value;
+        }
+        return ret;
     }
 }
 /**
@@ -37,8 +39,8 @@ export function decompressedKey(table, key) {
         * we have to split and readd the squared brackets value
         */
     var splitSquaredBrackets = key.split('[');
-    key = splitSquaredBrackets.shift();
-    var decompressed = table.uncompressedToCompressed.get(key);
+    var plainKey = splitSquaredBrackets.shift();
+    var decompressed = table.uncompressedToCompressed.get(plainKey);
     if (!decompressed) {
         return key;
     }
