@@ -77,15 +77,14 @@ export function compressedAndFlaggedKey(
         table,
         key
     );
-
     /**
      * keys could be array-accessors like myArray[4]
-     * we have to split and readd the squared brackets value
+     * we have to split and read the squared brackets value
      */
     const splitSquaredBrackets = key.split('[');
-    key = splitSquaredBrackets.shift() as string;
+    const plainKey = splitSquaredBrackets.shift() as string;
 
-    const compressedKey = table.compressedToUncompressed.get(key);
+    const compressedKey = table.compressedToUncompressed.get(plainKey);
     if (!compressedKey) {
         return key;
     } else {

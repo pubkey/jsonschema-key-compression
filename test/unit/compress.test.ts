@@ -4,7 +4,8 @@ import {
     compressedPath,
     compressQuerySelector,
     compressQuery,
-    MangoQuery
+    MangoQuery,
+    createCompressionTable
 } from '../../src/index';
 import {
     getDefaultCompressionTable,

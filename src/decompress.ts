@@ -61,9 +61,9 @@ export function decompressedKey(
         * we have to split and readd the squared brackets value
         */
     const splitSquaredBrackets = key.split('[');
-    key = splitSquaredBrackets.shift() as string;
+    const plainKey = splitSquaredBrackets.shift() as string;
 
-    const decompressed = table.uncompressedToCompressed.get(key);
+    const decompressed = table.uncompressedToCompressed.get(plainKey);
     if (!decompressed) {
         return key;
     } else {
