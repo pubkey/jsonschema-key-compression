@@ -3,6 +3,8 @@
 Compress json-data based on its [json-schema](https://json-schema.org/) while still having valid json.
 It works by compressing long attribute-names into smaller ones and backwards.
 
+This module was originally created for the [RxDB compression plugin](https://rxdb.info/key-compression.html) but in theory it can be used in any json based state management system or database.
+
 For example this:
 
 ```json
