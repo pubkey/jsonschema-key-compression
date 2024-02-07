@@ -20,17 +20,19 @@ export function compressObject(
     } else {
         // object
         const ret: PlainJsonObject = {};
-        Object.keys(obj).forEach(key => {
+        const keys = Object.keys(obj);
+        for (let index = 0; index < keys.length; index++) {
+            const key = keys[index];
             const compressedKey = compressedAndFlaggedKey(
                 table,
-                key
+                key as any
             );
             const value = compressObject(
                 table,
-                obj[key]
+                obj[key as any]
             );
             ret[compressedKey] = value;
-        });
+        }
         return ret;
     }
 }
@@ -83,7 +85,6 @@ export function compressedAndFlaggedKey(
      */
     const splitSquaredBrackets = key.split('[');
     const plainKey = splitSquaredBrackets.shift() as string;
-
     const compressedKey = table.compressedToUncompressed.get(plainKey);
     if (!compressedKey) {
         return key;

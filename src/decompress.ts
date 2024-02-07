@@ -14,17 +14,19 @@ export function decompressObject(
     } else {
         // object
         const ret: PlainJsonObject = {};
-        Object.keys(obj).forEach(key => {
+        const keys = Object.keys(obj);
+        for (let index = 0; index < keys.length; index++) {
+            const key = keys[index];
             const decompressed = decompressedKey(
                 table,
-                key
+                key as any
             );
             const value = decompressObject(
                 table,
-                obj[key]
+                obj[key as any]
             );
             ret[decompressed] = value;
-        });
+        }
         return ret;
     }
 }

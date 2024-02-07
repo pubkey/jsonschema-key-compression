@@ -16,23 +16,23 @@ import {
 const benchmark = {
     notice: 'times are in milliseconds',
     createCompressionTable: {
-        amount: 1000,
+        amount: 10000,
         total: 0,
         perInstance: 0
     },
     compress: {
-        amount: 1000,
+        amount: 10000,
         total: 0,
         perObject: 0
     },
     decompress: {
-        amount: 1000,
+        amount: 10000,
         total: 0,
         perObject: 0
     }
 };
 
-describe('performance.test.js', () => {
+describe('performance.test.ts', () => {
     it('.createCompressionTable()', () => {
         // prepare
         const startTime = performanceNow();
