@@ -53,7 +53,7 @@ describe('issues.test.ts', () => {
             clone(document)
         );
 
-        const tagsKeys = Object.keys(compressed['|b']);
+        const tagsKeys = Object.keys((compressed as any)['|b']);
 
         /**
          * These keys are not known to the schema
@@ -105,7 +105,7 @@ describe('issues.test.ts', () => {
             clone(document)
         );
 
-        const tagsKeys = Object.keys(compressed['|b']);
+        const tagsKeys = Object.keys((compressed as any)['|b']);
 
         assert.deepStrictEqual(tagsKeys, ['|b[1]']);
 

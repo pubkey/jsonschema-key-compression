@@ -23,13 +23,10 @@ export function randomObject(): PlainJsonObject {
         countryCode: 'en',
         birthYear: 1960,
         active: randomBoolean(),
-        shoppingCartItems: [{
+        shoppingCartItems: new Array(10).fill(0).map(() => ({
             productNumber: randomNumber(10000, 99999),
             amount: randomNumber(1, 10)
-        }, {
-            productNumber: randomNumber(10000, 99999),
-            amount: randomNumber(1, 10)
-        }]
+        }))
     };
 }
 export const schema: JsonSchema = {

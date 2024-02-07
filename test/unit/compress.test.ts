@@ -36,19 +36,19 @@ describe('compress.test.ts', () => {
                 getDefaultCompressionTable(),
                 getDefaultObject()
             );
-            assert.ok(compressed['notInSchema']);
+            assert.ok((compressed as any)['notInSchema']);
         });
         it('should not have compressed the attribute that is too short', () => {
             const compressed = compressObject(
                 getDefaultCompressionTable(),
                 getDefaultObject()
             );
-            assert.ok(compressed['id']);
+            assert.ok((compressed as any)['id']);
         });
         it('should throw when the object contains an attribute that starts with the compression-flag', () => {
             const table = getDefaultCompressionTable();
             const obj = getDefaultObject();
-            obj[table.compressionFlag + 'foo'] = 'bar';
+            (obj as any)[table.compressionFlag + 'foo'] = 'bar';
             assert.throws(
                 () => compressObject(
                     table,
