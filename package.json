@@ -44,7 +44,7 @@
     "async-test-util": "2.5.0",
     "copyfiles": "2.4.1",
     "faker": "5.5.3",
-    "mocha": "11.5.0",
+    "mocha": "11.6.0",
     "node-gzip": "1.1.2",
     "rimraf": "6.0.1",
     "ts-node": "10.9.2",
