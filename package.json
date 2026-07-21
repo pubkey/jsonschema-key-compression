@@ -43,7 +43,7 @@
     "assert": "2.1.0",
     "async-test-util": "2.5.0",
     "copyfiles": "2.4.1",
-    "faker": "5.5.3",
+    "@faker-js/faker": "5.5.3",
     "mocha": "11.7.6",
     "node-gzip": "1.1.2",
     "rimraf": "6.1.3",
