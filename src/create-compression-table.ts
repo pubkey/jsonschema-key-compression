@@ -101,7 +101,12 @@ export function uncompressedToCompressedTable(
     const reverseTable: TableType = new Map();
     Array.from(table.keys()).forEach(key => {
         const value = table.get(key) as string;
-        if (!ignoreProperties.includes(value)) {
+        /**
+         * The ignored properties are property names,
+         * so they must be compared to the key and not to the
+         * compressed value which could randomly be equal to an ignored name.
+         */
+        if (!ignoreProperties.includes(key)) {
             reverseTable.set(compressionFlag + value, key);
         }
     });
