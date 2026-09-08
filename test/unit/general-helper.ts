@@ -101,6 +101,28 @@ export const COMPLEX_SCHEMA: JsonSchema = {
             },
             required: ['streetName']
         },
+        // enum with object values
+        preferredAddress: {
+            type: 'object',
+            properties: {
+                streetName: {
+                    type: 'string'
+                },
+                houseNumber: {
+                    type: 'integer'
+                }
+            },
+            enum: [
+                {
+                    streetName: 'main street',
+                    houseNumber: 1
+                },
+                {
+                    streetName: 'park road',
+                    houseNumber: 2
+                }
+            ]
+        },
         // arrays of primitives
         scores: {
             type: 'array',
@@ -399,6 +421,11 @@ export function randomDocument(rng: RandomGenerator, index: number): PlainJsonOb
             doc.address = address;
         }
     }
+    if (rng.bool(0.5)) {
+        doc.preferredAddress = rng.bool()
+            ? { streetName: 'main street', houseNumber: 1 }
+            : { streetName: 'park road', houseNumber: 2 };
+    }
     if (rng.bool(0.7)) doc.scores = randomArray(rng, 4, () => rng.int(0, 10));
     if (rng.bool(0.7)) {
         doc.phoneNumbers = rng.bool(0.25) ? null : randomArray(rng, 3, () => {
@@ -559,6 +586,8 @@ export function mutateDocument(rng: RandomGenerator, validDoc: PlainJsonObjectNo
         () => doc.priority = 4,
         () => doc.mixedEnum = 'high',
         () => doc.metadata.tags = ['purple'],
+        () => doc.preferredAddress = { streetName: 'main street', houseNumber: 2 },
+        () => doc.preferredAddress = { streetName: 'park road', houseNumber: 2 },
         // nullable
         () => doc.address = null,
         () => doc.address = 'junk',
@@ -653,6 +682,8 @@ export const QUERY_FIELDS: FieldDescription[] = [
     { path: 'address.streetName', kind: 'string', values: STREET_NAMES },
     { path: 'address.houseNumber', kind: 'number', values: [1, 10, 25, 50] },
     { path: 'address.countryCode', kind: 'enum', values: ['de', 'en', 'fr'] },
+    { path: 'preferredAddress', kind: 'object', values: [{ streetName: 'main street', houseNumber: 1 }, { streetName: 'park road', houseNumber: 2 }] },
+    { path: 'preferredAddress.houseNumber', kind: 'enum', values: [1, 2] },
     { path: 'scores', kind: 'numberArray', values: [0, 3, 5, 10] },
     { path: 'scores.0', kind: 'number', values: [0, 3, 5, 10] },
     { path: 'phoneNumbers', kind: 'objectArray', values: [null] },

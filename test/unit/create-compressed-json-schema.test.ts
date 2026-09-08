@@ -138,3 +138,58 @@ describe('create-compressed-json-schema.test.ts', () => {
         });
     });
 });
+
+describe('create-compressed-json-schema.test.ts enum values', () => {
+    /**
+     * enum values are document fragments,
+     * so object values inside of an enum contain property names
+     * that compressObject() compresses in the document.
+     * The compressed schema must contain the compressed enum values.
+     */
+    it('should compress object values inside of enum', () => {
+        const schema: JsonSchema = {
+            type: 'object',
+            properties: {
+                location: {
+                    type: 'object',
+                    properties: {
+                        streetName: {
+                            type: 'string'
+                        },
+                        houseNumber: {
+                            type: 'integer'
+                        }
+                    },
+                    enum: [
+                        {
+                            streetName: 'main street',
+                            houseNumber: 1
+                        },
+                        {
+                            streetName: 'park road',
+                            houseNumber: 2
+                        }
+                    ]
+                },
+                countryCode: {
+                    type: 'string',
+                    enum: ['de', 'en']
+                }
+            }
+        };
+        const table = createCompressionTable(schema);
+        const compressedSchema = createCompressedJsonSchema(table, schema);
+        const compressedProperties = compressedSchema.properties as any;
+
+        const locationSchema = compressedProperties[compressedPath(table, 'location')];
+        assert.ok(locationSchema);
+        assert.deepStrictEqual(
+            locationSchema.enum,
+            (schema as any).properties.location.enum.map((value: any) => compressObject(table, value))
+        );
+
+        // primitive enum values must stay as they are
+        const countryCodeSchema = compressedProperties[compressedPath(table, 'countryCode')];
+        assert.deepStrictEqual(countryCodeSchema.enum, ['de', 'en']);
+    });
+});
