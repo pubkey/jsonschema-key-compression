@@ -3,7 +3,10 @@ import type {
     CompressionTable
 } from './types';
 import { flatClone } from './util';
-import { compressedPath } from './compress';
+import {
+    compressedPath,
+    compressObject
+} from './compress';
 
 /**
  * Transforms the schema so that it describes the compressed objects.
@@ -28,7 +31,8 @@ export function createCompressedJsonSchema(
         schema.oneOf ||
         schema.not ||
         schema.dependencies ||
-        schema.definitions;
+        schema.definitions ||
+        schema.enum;
     if (!hasNested) {
         // no deeper fields in the schema
         return schema;
@@ -107,6 +111,15 @@ export function createCompressedJsonSchema(
     // definition names are not property names, only the sub-schemas are compressed
     if (schema.definitions) {
         cloned.definitions = compressSchemaMap(schema.definitions, false);
+    }
+
+    /**
+     * enum values are document fragments,
+     * so object values contain property names that must be compressed.
+     * Primitive values are returned unchanged by compressObject().
+     */
+    if (schema.enum) {
+        cloned.enum = schema.enum.map(value => compressObject(compressionTable, value));
     }
 
     return cloned;
