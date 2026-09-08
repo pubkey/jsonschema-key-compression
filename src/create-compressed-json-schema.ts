@@ -7,56 +7,106 @@ import { compressedPath } from './compress';
 
 /**
  * Transforms the schema so that it describes the compressed objects.
- * It recurses into 'items' and 'properties' whenever they exist,
- * independent of the 'type' field. This mirrors how the compression-table
- * is created, so that every key that compressObject() compresses
- * is also compressed in the schema. For example a nullable nested object
- * has type: ['object', 'null'] and its properties must still be compressed.
+ * It recurses into all keywords that can contain sub-schemas,
+ * independent of the 'type' field. This mirrors how compressObject() works,
+ * which compresses every key that is known to the compression-table,
+ * wherever the key occurs in the document. For example a nullable nested object
+ * has type: ['object', 'null'] and its properties must still be compressed,
+ * and properties inside of oneOf/anyOf/allOf must be compressed as well.
  */
 export function createCompressedJsonSchema(
     compressionTable: CompressionTable,
     schema: JsonSchema
 ): JsonSchema {
-    if (!schema.items && !schema.properties) {
+    const hasNested = schema.items ||
+        schema.additionalItems ||
+        schema.properties ||
+        schema.patternProperties ||
+        schema.required ||
+        schema.allOf ||
+        schema.anyOf ||
+        schema.oneOf ||
+        schema.not ||
+        schema.dependencies ||
+        schema.definitions;
+    if (!hasNested) {
         // no deeper fields in the schema
         return schema;
     }
 
     const cloned = flatClone(schema);
+    const compressSchema = (subSchema: JsonSchema) => createCompressedJsonSchema(compressionTable, subSchema);
+    const compressKey = (key: string) => compressedPath(compressionTable, key);
+    const compressSchemaMap = (
+        schemaMap: { [k: string]: JsonSchema },
+        compressKeys: boolean
+    ): { [k: string]: JsonSchema } => {
+        const ret: { [k: string]: JsonSchema } = {};
+        // do not use Object.entries, it is transpiled shitty
+        Object.keys(schemaMap).forEach(key => {
+            const useKey = compressKeys ? compressKey(key) : key;
+            ret[useKey] = compressSchema(schemaMap[key] as JsonSchema);
+        });
+        return ret;
+    };
 
     if (schema.items) {
         if (Array.isArray(schema.items)) {
-            const newItems = schema.items.map(item => createCompressedJsonSchema(
-                compressionTable,
-                item
-            ));
-            cloned.items = newItems;
+            cloned.items = schema.items.map(compressSchema);
         } else {
-            const newItems = createCompressedJsonSchema(
-                compressionTable,
-                schema.items
-            );
-            cloned.items = newItems;
+            cloned.items = compressSchema(schema.items);
         }
     }
+    if (schema.additionalItems && typeof schema.additionalItems === 'object') {
+        cloned.additionalItems = compressSchema(schema.additionalItems);
+    }
 
+    // compress all property names
     if (schema.properties) {
-        // compress all property names
-        const newProperties: {
-            [k: string]: JsonSchema
-        } = {};
-        // do not use Object.entries, it is transpiled shitty
-        Object.keys(schema.properties).forEach(key => {
-            const property = (schema as any).properties[key];
-            const compressedKey = compressedPath(compressionTable, key);
-            newProperties[compressedKey] = createCompressedJsonSchema(compressionTable, property);
-        });
-        cloned.properties = newProperties;
+        cloned.properties = compressSchemaMap(schema.properties, true);
+    }
+    // the patterns are not property names, only the sub-schemas are compressed
+    if (schema.patternProperties) {
+        cloned.patternProperties = compressSchemaMap(schema.patternProperties, false);
+    }
+    // also compress the required array
+    if (schema.required) {
+        cloned.required = schema.required.map(compressKey);
+    }
 
-        // also compress the required array
-        if (cloned.required) {
-            cloned.required = cloned.required.map(key => compressedPath(compressionTable, key));
-        }
+    if (schema.allOf) {
+        cloned.allOf = schema.allOf.map(compressSchema);
+    }
+    if (schema.anyOf) {
+        cloned.anyOf = schema.anyOf.map(compressSchema);
+    }
+    if (schema.oneOf) {
+        cloned.oneOf = schema.oneOf.map(compressSchema);
+    }
+    if (schema.not) {
+        cloned.not = compressSchema(schema.not);
+    }
+
+    /**
+     * dependencies are keyed by property name
+     * and contain either a list of property names
+     * or a sub-schema
+     */
+    if (schema.dependencies) {
+        const dependencies = schema.dependencies;
+        const newDependencies: { [k: string]: JsonSchema | string[] } = {};
+        Object.keys(dependencies).forEach(key => {
+            const dependency = dependencies[key] as JsonSchema | string[];
+            newDependencies[compressKey(key)] = Array.isArray(dependency) ?
+                dependency.map(compressKey) :
+                compressSchema(dependency);
+        });
+        cloned.dependencies = newDependencies;
+    }
+
+    // definition names are not property names, only the sub-schemas are compressed
+    if (schema.definitions) {
+        cloned.definitions = compressSchemaMap(schema.definitions, false);
     }
 
     return cloned;
