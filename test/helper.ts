@@ -57,13 +57,16 @@ export const schema: JsonSchema = {
             type: 'boolean'
         },
         shoppingCartItems: {
-            type: 'object',
-            properties: {
-                productNumber: {
-                    type: 'number'
-                },
-                amount: {
-                    type: 'number'
+            type: 'array',
+            items: {
+                type: 'object',
+                properties: {
+                    productNumber: {
+                        type: 'number'
+                    },
+                    amount: {
+                        type: 'number'
+                    }
                 }
             }
         }
