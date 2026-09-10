@@ -1,5 +1,6 @@
 import type {
     PlainJsonObject,
+    PlainJsonObjectNotArray,
     CompressionTable,
     MangoQuery
 } from './types';
@@ -13,28 +14,28 @@ export function compressObject(
     obj: PlainJsonObject
 ): PlainJsonObject {
     if (typeof obj !== 'object' || obj === null) return obj;
-    else if (Array.isArray(obj)) {
+    if (Array.isArray(obj)) {
         // array
-        return obj
-            .map(item => compressObject(table, item));
-    } else {
-        // object
-        const ret: PlainJsonObject = {};
-        const keys = Object.keys(obj);
-        for (let index = 0; index < keys.length; index++) {
-            const key = keys[index];
-            const compressedKey = compressedAndFlaggedKey(
-                table,
-                key as any
-            );
-            const value = compressObject(
-                table,
-                obj[key as any]
-            );
-            ret[compressedKey] = value;
+        const retArray: PlainJsonObjectNotArray[] = new Array(obj.length);
+        for (let index = 0; index < obj.length; index++) {
+            const item = obj[index];
+            // primitives do not need a recursive call
+            retArray[index] = (typeof item === 'object' && item !== null) ? compressObject(table, item) as any : item;
         }
-        return ret;
+        return retArray;
     }
+    // object
+    const ret: PlainJsonObjectNotArray = {};
+    const keys = Object.keys(obj);
+    for (let index = 0; index < keys.length; index++) {
+        const key = keys[index] as string;
+        const value = (obj as PlainJsonObjectNotArray)[key];
+        // primitives do not need a recursive call
+        ret[compressedAndFlaggedKey(table, key)] = (typeof value === 'object' && value !== null) ?
+            compressObject(table, value) :
+            value;
+    }
+    return ret;
 }
 
 /**
@@ -71,6 +72,26 @@ export function throwErrorIfCompressionFlagUsed(
     }
 }
 
+/**
+ * Cache of the flagged compressed keys per table,
+ * so that the flag does not have to be concatenated on each use.
+ * The cache is keyed by the table object, so a table must not be
+ * mutated after it has been used for compression.
+ */
+const flaggedKeysCache: WeakMap<CompressionTable, Map<string, string>> = new WeakMap();
+function getFlaggedKeys(table: CompressionTable): Map<string, string> {
+    let flaggedKeys = flaggedKeysCache.get(table);
+    if (!flaggedKeys) {
+        const newFlaggedKeys: Map<string, string> = new Map();
+        table.compressedToUncompressed.forEach((compressedKey, key) => {
+            newFlaggedKeys.set(key, table.compressionFlag + compressedKey);
+        });
+        flaggedKeysCache.set(table, newFlaggedKeys);
+        flaggedKeys = newFlaggedKeys;
+    }
+    return flaggedKeys;
+}
+
 export function compressedAndFlaggedKey(
     table: CompressionTable,
     key: string
@@ -81,17 +102,22 @@ export function compressedAndFlaggedKey(
     );
     /**
      * keys could be array-accessors like myArray[4]
-     * we have to split and read the squared brackets value
+     * so the part before the squared bracket is looked up
+     * and the bracket part is re-added.
+     * Most keys have no bracket, so the plain lookup is the fast path.
      */
-    const splitSquaredBrackets = key.split('[');
-    const plainKey = splitSquaredBrackets.shift() as string;
-    const compressedKey = table.compressedToUncompressed.get(plainKey);
-    if (!compressedKey) {
-        return key;
-    } else {
-        const readdSquared = splitSquaredBrackets.length ? '[' + splitSquaredBrackets.join('[') : '';
-        return table.compressionFlag + compressedKey + readdSquared;
+    const flaggedKeys = getFlaggedKeys(table);
+    const bracketIndex = key.indexOf('[');
+    if (bracketIndex === -1) {
+        const directFlaggedKey = flaggedKeys.get(key);
+        return directFlaggedKey ? directFlaggedKey : key;
     }
+    const plainKey = key.slice(0, bracketIndex);
+    const flaggedKey = flaggedKeys.get(plainKey);
+    if (!flaggedKey) {
+        return key;
+    }
+    return flaggedKey + key.slice(bracketIndex);
 }
 
 

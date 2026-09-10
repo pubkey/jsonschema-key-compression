@@ -66,11 +66,11 @@ You can reproduce these results by running `npm run test:efficiency`.
 
 ## Performance
 
-The compression works pretty fast. Here are some time measurements on a single intel i7 CPU.
+The compression works pretty fast. Here are some time measurements on a single CPU core of a Node.js 22 process. Only the measured operation is timed, the creation of the test-data is not part of the measurement.
 
-* Creating a compression-table from the schema of the object above takes about `0.02ms`
-* Compressing the example-object from above takes about `0.021ms`
-* Decompressing takes about `0.027ms` per object
+* Creating a compression-table from the schema of the object above takes about `0.005ms`
+* Compressing the example-object from above takes about `0.0025ms`
+* Decompressing takes about `0.002ms` per object
 
 You can reproduce these results by running `npm run test:performance`.
 
