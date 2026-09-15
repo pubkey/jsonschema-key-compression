@@ -7,6 +7,7 @@ import {
     numberToLetter,
     alphabeticCompare
 } from './util';
+import { getEnumCompressionTable } from './enum-compression';
 
 /**
  * Compressed property-names begin with the compression-flag
@@ -16,10 +17,17 @@ import {
  */
 export const DEFAULT_COMPRESSION_FLAG = '|';
 
+/**
+ * @param compressEnums If true, the values of string-enums are compressed
+ * into the index of the value inside of the enum.
+ * This changes the stored format, so it is opt-in
+ * to keep already compressed data readable.
+ */
 export function createCompressionTable(
     schema: JsonSchema,
     compressionFlag: string = DEFAULT_COMPRESSION_FLAG,
-    ignoreProperties: string[] = []
+    ignoreProperties: string[] = [],
+    compressEnums: boolean = false
 ): CompressionTable {
     const table = compressedToUncompressedTable(
         schema,
@@ -34,6 +42,20 @@ export function createCompressionTable(
         ),
         compressionFlag
     };
+
+    if (compressEnums) {
+        const enumCompression = getEnumCompressionTable(
+            schema,
+            ignoreProperties
+        );
+        /**
+         * The field stays undefined when there is nothing to compress,
+         * so that the compression does not have to look it up on each key.
+         */
+        if (enumCompression.size > 0) {
+            compressionTable.enumCompression = enumCompression;
+        }
+    }
 
     return compressionTable;
 }

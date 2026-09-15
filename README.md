@@ -62,6 +62,9 @@ The efficiency depends on the amount and length of the attribute names.
 * Just using gzip on the json would result in **180 chars**
 * Using gzip+key-compression ends in a string with only **127 chars**
 
+The [enum-compression](#enum-compression) saves additional space,
+the longer the values of the enums are the more it saves.
+
 You can reproduce these results by running `npm run test:efficiency`.
 
 ## Performance
@@ -103,10 +106,63 @@ Creates a compression-table from the [json-schema](https://json-schema.org/).
 
 ```js
 import {
-    createCompressionTable
+    createCompressionTable,
+    DEFAULT_COMPRESSION_FLAG
 } from 'jsonschema-key-compression';
 const compressionTable = createCompressionTable(jsonSchema);
+
+// all parameters
+const compressionTable = createCompressionTable(
+    jsonSchema,
+    DEFAULT_COMPRESSION_FLAG, // the character that marks a compressed key
+    ['myProperty'],           // property-names that must not be compressed
+    true                      // enable the enum-compression, see below
+);
 ```
+
+### Enum-compression
+
+Enum-compression stores the value of a property as the index of that value
+inside of the `enum` of the property. With the enum `['admin', 'editor', 'viewer']`
+the value `'editor'` is stored as the number `1`.
+
+It is opt-in with the fourth parameter of `createCompressionTable()`,
+so that data which was compressed without it stays readable.
+
+```js
+const compressionTable = createCompressionTable(
+    jsonSchema,
+    DEFAULT_COMPRESSION_FLAG,
+    [],
+    true
+);
+
+compressObject(compressionTable, {
+    userRole: 'editor',
+    colorTags: ['red', 'blue']
+});
+// > { '|b': 1, '|a': [2, 0] }
+```
+
+A property is only enum-compressed when it is safe to do so:
+* All values of the enum must be strings. A number inside of the enum could not be
+  told apart from an index, and strings are where the saved space is.
+* The property name must have the same enum everywhere in the schema.
+  A name that is used with different enums, or that has no enum somewhere else,
+  is left alone because the same number would otherwise mean different things.
+* Properties in `ignoreProperties` are not enum-compressed.
+
+The enum-values are sorted before the indexes are assigned, so the order of the indexes
+is the alphabetical order of the values. Because of this, `sort` and the range-operators
+`$gt`, `$gte`, `$lt` and `$lte` keep working on compressed data.
+`compressQuery()` also transforms the values of `$eq`, `$ne`, `$in`, `$nin`, `$all`,
+`$not` and `$elemMatch`, and resolves a `$regex` into the `$in` of the matching indexes.
+The operators `$type` and `$mod` are not transformed, they would run on the
+number of the compressed value.
+
+Enum-compression assumes that the data matches the schema.
+A document that stores a number where the schema defines an enum of strings
+cannot be told apart from an already compressed value.
 
 ### compressObject
 Compress a json-object based on its schema.

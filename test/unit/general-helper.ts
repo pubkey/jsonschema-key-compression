@@ -909,3 +909,35 @@ export function randomQuery(rng: RandomGenerator): MangoQuery {
     }
     return query;
 }
+
+/**
+ * Enum-compression stores the index of an enum-value.
+ * A document that stores a number where the schema wants an enum-value
+ * therefore cannot be told apart from a compressed value.
+ * Such documents are only created by the mutations of this test,
+ * schema-conforming data never contains them.
+ * @recursive
+ */
+export function hasNumberAtEnumProperty(
+    value: any,
+    enumProperties: Set<string>
+): boolean {
+    if (Array.isArray(value)) {
+        return value.some(item => hasNumberAtEnumProperty(item, enumProperties));
+    }
+    if (typeof value !== 'object' || value === null) {
+        return false;
+    }
+    return Object.keys(value).some(key => {
+        const subValue = value[key];
+        if (enumProperties.has(key)) {
+            if (typeof subValue === 'number') {
+                return true;
+            }
+            if (Array.isArray(subValue) && subValue.some(item => typeof item === 'number')) {
+                return true;
+            }
+        }
+        return hasNumberAtEnumProperty(subValue, enumProperties);
+    });
+}

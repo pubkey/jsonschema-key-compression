@@ -39,16 +39,19 @@ export const schema: JsonSchema = {
             type: 'string'
         },
         title: {
-            type: 'string'
+            type: 'string',
+            enum: ['Mr.', 'Mrs.', 'Ms.', 'Dr.']
         },
         gender: {
-            type: 'string'
+            type: 'string',
+            enum: ['f', 'm', 'x']
         },
         zipCode: {
             type: 'number'
         },
         countryCode: {
-            type: 'string'
+            type: 'string',
+            enum: ['de', 'en', 'es', 'fr']
         },
         birthYear: {
             type: 'number'

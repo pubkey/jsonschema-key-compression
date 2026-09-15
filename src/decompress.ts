@@ -3,6 +3,7 @@ import type {
     PlainJsonObjectNotArray,
     CompressionTable
 } from './types';
+import { decompressEnumValue } from './enum-compression';
 
 export function decompressObject(
     table: CompressionTable,
@@ -22,13 +23,20 @@ export function decompressObject(
     // object
     const ret: PlainJsonObjectNotArray = {};
     const keys = Object.keys(obj);
+    const enumCompression = table.enumCompression;
     for (let index = 0; index < keys.length; index++) {
         const key = keys[index] as string;
         const value = (obj as PlainJsonObjectNotArray)[key];
-        // primitives do not need a recursive call
-        ret[decompressedKey(table, key)] = (typeof value === 'object' && value !== null) ?
-            decompressObject(table, value) :
-            value;
+        const decompressed = decompressedKey(table, key);
+        const enumValues = enumCompression && enumCompression.get(decompressed);
+        if (enumValues && (typeof value === 'number' || Array.isArray(value))) {
+            ret[decompressed] = decompressEnumValue(enumValues, value);
+        } else {
+            // primitives do not need a recursive call
+            ret[decompressed] = (typeof value === 'object' && value !== null) ?
+                decompressObject(table, value) :
+                value;
+        }
     }
     return ret;
 }

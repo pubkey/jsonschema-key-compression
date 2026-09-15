@@ -1,5 +1,6 @@
 import type {
     JsonSchema,
+    JsonSchemaTypes,
     CompressionTable
 } from './types';
 import { flatClone } from './util';
@@ -7,6 +8,48 @@ import {
     compressedPath,
     compressObject
 } from './compress';
+
+/**
+ * A value that is enum-compressed is stored as the index of the value,
+ * so the type of the property changes from string to number.
+ */
+function toNumberType(
+    type: JsonSchemaTypes | JsonSchemaTypes[] | undefined
+): JsonSchemaTypes | JsonSchemaTypes[] | undefined {
+    if (!type) {
+        return type;
+    }
+    if (Array.isArray(type)) {
+        return type.map(single => single === 'string' ? 'number' : single);
+    }
+    return type === 'string' ? 'number' : type;
+}
+
+/**
+ * Replaces the enum-values of an enum-compressed property
+ * by the indexes that the compressed documents contain.
+ * The enum can sit at the property itself or at the items of an array-property.
+ * @recursive
+ */
+function compressEnumOfSchema(
+    schema: JsonSchema,
+    enumValues: string[]
+): JsonSchema {
+    let ret = schema;
+    if (Array.isArray(schema.enum)) {
+        ret = flatClone(schema);
+        ret.enum = enumValues.map((_value, index) => index);
+        ret.type = toNumberType(schema.type);
+    }
+    const items = ret.items;
+    if (items && !Array.isArray(items) && Array.isArray(items.enum)) {
+        if (ret === schema) {
+            ret = flatClone(schema);
+        }
+        ret.items = compressEnumOfSchema(items, enumValues);
+    }
+    return ret;
+}
 
 /**
  * Transforms the schema so that it describes the compressed objects.
@@ -39,6 +82,7 @@ export function createCompressedJsonSchema(
     }
 
     const cloned = flatClone(schema);
+    const enumCompression = compressionTable.enumCompression;
     const compressSchema = (subSchema: JsonSchema) => createCompressedJsonSchema(compressionTable, subSchema);
     const compressKey = (key: string) => compressedPath(compressionTable, key);
     const compressSchemaMap = (
@@ -49,7 +93,13 @@ export function createCompressedJsonSchema(
         // do not use Object.entries, it is transpiled shitty
         Object.keys(schemaMap).forEach(key => {
             const useKey = compressKeys ? compressKey(key) : key;
-            ret[useKey] = compressSchema(schemaMap[key] as JsonSchema);
+            const subSchema = compressSchema(schemaMap[key] as JsonSchema);
+            /**
+             * Only real property names can be enum-compressed,
+             * the keys of patternProperties and definitions are no property names.
+             */
+            const enumValues = (compressKeys && enumCompression) ? enumCompression.get(key) : undefined;
+            ret[useKey] = enumValues ? compressEnumOfSchema(subSchema, enumValues) : subSchema;
         });
         return ret;
     };
