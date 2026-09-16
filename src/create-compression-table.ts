@@ -7,6 +7,7 @@ import {
     numberToLetter,
     alphabeticCompare
 } from './util';
+import { getEnumCompressionTable } from './enum-compression';
 
 /**
  * Compressed property-names begin with the compression-flag
@@ -16,10 +17,17 @@ import {
  */
 export const DEFAULT_COMPRESSION_FLAG = '|';
 
+/**
+ * @param compressEnums If true, the values of string-enums are compressed
+ * into the index of the value inside of the enum.
+ * This changes the stored format, so it is opt-in
+ * to keep already compressed data readable.
+ */
 export function createCompressionTable(
     schema: JsonSchema,
     compressionFlag: string = DEFAULT_COMPRESSION_FLAG,
-    ignoreProperties: string[] = []
+    ignoreProperties: string[] = [],
+    compressEnums: boolean = false
 ): CompressionTable {
     const table = compressedToUncompressedTable(
         schema,
@@ -35,6 +43,20 @@ export function createCompressionTable(
         compressionFlag
     };
 
+    if (compressEnums) {
+        const enumCompression = getEnumCompressionTable(
+            schema,
+            ignoreProperties
+        );
+        /**
+         * The field stays undefined when there is nothing to compress,
+         * so that the compression does not have to look it up on each key.
+         */
+        if (enumCompression.size > 0) {
+            compressionTable.enumCompression = enumCompression;
+        }
+    }
+
     return compressionTable;
 }
 
@@ -44,35 +66,37 @@ export function createCompressionTable(
  */
 export function getPropertiesOfSchema(schema: JsonSchema): Set<string> {
     const ret: Set<string> = new Set();
+    addPropertiesOfSchema(schema, ret);
+    return ret;
+}
 
-    function addSchema(innerSchema: JsonSchema) {
-        const keys = getPropertiesOfSchema(innerSchema);
-        Array.from(keys).forEach(k => ret.add(k));
-    }
-
-    if (schema.properties) {
+/**
+ * Adds all property names of the schema to the given set.
+ * Using a single accumulator set avoids creating
+ * a new set and array copy on each nesting level.
+ */
+function addPropertiesOfSchema(schema: JsonSchema, ret: Set<string>) {
+    const properties = schema.properties;
+    if (properties) {
         // do not use Object.entries, it is transpiled shitty
-        Object.keys(schema.properties).forEach(property => {
-            const deepSchema = (schema as any).properties[property];
+        const propertyNames = Object.keys(properties);
+        for (let i = 0; i < propertyNames.length; i++) {
+            const property = propertyNames[i] as string;
             ret.add(property);
-            if (!schema.properties) {
-                return;
-            }
-            addSchema(deepSchema);
-        });
-    }
-
-    if (schema.items) {
-        if (Array.isArray(schema.items)) {
-            schema.items.forEach(subSchema => {
-                addSchema(subSchema);
-            });
-        } else {
-            addSchema(schema.items);
+            addPropertiesOfSchema(properties[property] as JsonSchema, ret);
         }
     }
 
-    return ret;
+    const items = schema.items;
+    if (items) {
+        if (Array.isArray(items)) {
+            for (let i = 0; i < items.length; i++) {
+                addPropertiesOfSchema(items[i] as JsonSchema, ret);
+            }
+        } else {
+            addPropertiesOfSchema(items, ret);
+        }
+    }
 }
 
 export function compressedToUncompressedTable(
@@ -83,13 +107,13 @@ export function compressedToUncompressedTable(
     const schemaKeysSorted: string[] = Array.from(attributes).sort(alphabeticCompare);
     const table: TableType = new Map();
     let lastKeyNumber: number = 0;
-    schemaKeysSorted
-        .filter(k => k.length > 3 && !ignoreProperties.includes(k))
-        .forEach(k => {
-            const compressKey = numberToLetter(lastKeyNumber);
+    for (let i = 0; i < schemaKeysSorted.length; i++) {
+        const k = schemaKeysSorted[i] as string;
+        if (k.length > 3 && !ignoreProperties.includes(k)) {
+            table.set(k, numberToLetter(lastKeyNumber));
             lastKeyNumber++;
-            table.set(k, compressKey);
-        });
+        }
+    }
     return table;
 }
 
@@ -99,9 +123,13 @@ export function uncompressedToCompressedTable(
     ignoreProperties: string[]
 ): TableType {
     const reverseTable: TableType = new Map();
-    Array.from(table.keys()).forEach(key => {
-        const value = table.get(key) as string;
-        if (!ignoreProperties.includes(value)) {
+    table.forEach((value, key) => {
+        /**
+         * The ignored properties are property names,
+         * so they must be compared to the key and not to the
+         * compressed value which could randomly be equal to an ignored name.
+         */
+        if (!ignoreProperties.includes(key)) {
             reverseTable.set(compressionFlag + value, key);
         }
     });
