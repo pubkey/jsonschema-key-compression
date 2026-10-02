@@ -1,6 +1,7 @@
 export type {
     TableType,
     CompressionTable,
+    EnumCompressionTable,
     PlainJsonObjectNotArray,
     PlainJsonObject,
     SortDirection,
