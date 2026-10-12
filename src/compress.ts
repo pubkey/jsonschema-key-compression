@@ -1,8 +1,10 @@
 import type {
     PlainJsonObject,
+    PlainJsonObjectNotArray,
     CompressionTable,
     MangoQuery
 } from './types';
+import { compressEnumValue } from './enum-compression';
 
 /**
  * compress the keys of an object via the compression-table
@@ -13,28 +15,34 @@ export function compressObject(
     obj: PlainJsonObject
 ): PlainJsonObject {
     if (typeof obj !== 'object' || obj === null) return obj;
-    else if (Array.isArray(obj)) {
+    if (Array.isArray(obj)) {
         // array
-        return obj
-            .map(item => compressObject(table, item));
-    } else {
-        // object
-        const ret: PlainJsonObject = {};
-        const keys = Object.keys(obj);
-        for (let index = 0; index < keys.length; index++) {
-            const key = keys[index];
-            const compressedKey = compressedAndFlaggedKey(
-                table,
-                key as any
-            );
-            const value = compressObject(
-                table,
-                obj[key as any]
-            );
-            ret[compressedKey] = value;
+        const retArray: PlainJsonObjectNotArray[] = new Array(obj.length);
+        for (let index = 0; index < obj.length; index++) {
+            const item = obj[index];
+            // primitives do not need a recursive call
+            retArray[index] = (typeof item === 'object' && item !== null) ? compressObject(table, item) as any : item;
         }
-        return ret;
+        return retArray;
     }
+    // object
+    const ret: PlainJsonObjectNotArray = {};
+    const keys = Object.keys(obj);
+    const enumCompression = table.enumCompression;
+    for (let index = 0; index < keys.length; index++) {
+        const key = keys[index] as string;
+        const value = (obj as PlainJsonObjectNotArray)[key];
+        const enumValues = enumCompression && enumCompression.get(key);
+        if (enumValues && (typeof value === 'string' || Array.isArray(value))) {
+            ret[compressedAndFlaggedKey(table, key)] = compressEnumValue(enumValues, value);
+        } else {
+            // primitives do not need a recursive call
+            ret[compressedAndFlaggedKey(table, key)] = (typeof value === 'object' && value !== null) ?
+                compressObject(table, value) :
+                value;
+        }
+    }
+    return ret;
 }
 
 /**
@@ -71,6 +79,26 @@ export function throwErrorIfCompressionFlagUsed(
     }
 }
 
+/**
+ * Cache of the flagged compressed keys per table,
+ * so that the flag does not have to be concatenated on each use.
+ * The cache is keyed by the table object, so a table must not be
+ * mutated after it has been used for compression.
+ */
+const flaggedKeysCache: WeakMap<CompressionTable, Map<string, string>> = new WeakMap();
+function getFlaggedKeys(table: CompressionTable): Map<string, string> {
+    let flaggedKeys = flaggedKeysCache.get(table);
+    if (!flaggedKeys) {
+        const newFlaggedKeys: Map<string, string> = new Map();
+        table.compressedToUncompressed.forEach((compressedKey, key) => {
+            newFlaggedKeys.set(key, table.compressionFlag + compressedKey);
+        });
+        flaggedKeysCache.set(table, newFlaggedKeys);
+        flaggedKeys = newFlaggedKeys;
+    }
+    return flaggedKeys;
+}
+
 export function compressedAndFlaggedKey(
     table: CompressionTable,
     key: string
@@ -81,17 +109,22 @@ export function compressedAndFlaggedKey(
     );
     /**
      * keys could be array-accessors like myArray[4]
-     * we have to split and read the squared brackets value
+     * so the part before the squared bracket is looked up
+     * and the bracket part is re-added.
+     * Most keys have no bracket, so the plain lookup is the fast path.
      */
-    const splitSquaredBrackets = key.split('[');
-    const plainKey = splitSquaredBrackets.shift() as string;
-    const compressedKey = table.compressedToUncompressed.get(plainKey);
-    if (!compressedKey) {
-        return key;
-    } else {
-        const readdSquared = splitSquaredBrackets.length ? '[' + splitSquaredBrackets.join('[') : '';
-        return table.compressionFlag + compressedKey + readdSquared;
+    const flaggedKeys = getFlaggedKeys(table);
+    const bracketIndex = key.indexOf('[');
+    if (bracketIndex === -1) {
+        const directFlaggedKey = flaggedKeys.get(key);
+        return directFlaggedKey ? directFlaggedKey : key;
     }
+    const plainKey = key.slice(0, bracketIndex);
+    const flaggedKey = flaggedKeys.get(plainKey);
+    if (!flaggedKey) {
+        return key;
+    }
+    return flaggedKey + key.slice(bracketIndex);
 }
 
 
@@ -162,37 +195,154 @@ export function compressQuery(
 }
 
 /**
+ * Operators whose value is a document-value and therefore
+ * has to be enum-compressed like the documents themselves.
+ * Any other operator, like $type or $mod, gets its value unchanged.
+ */
+const ENUM_VALUE_OPERATORS: string[] = [
+    '$eq',
+    '$ne',
+    '$gt',
+    '$gte',
+    '$lt',
+    '$lte',
+    '$in',
+    '$nin',
+    '$all',
+    '$not',
+    '$elemMatch'
+];
+
+/**
+ * Returns the enum of the property that the path points to,
+ * or undefined when that property is not enum-compressed.
+ */
+function enumValuesOfPath(
+    table: CompressionTable,
+    path: string
+): string[] | undefined {
+    const enumCompression = table.enumCompression;
+    if (!enumCompression) {
+        return undefined;
+    }
+    const splitted = path.split('.');
+    let lastKey = splitted[splitted.length - 1] as string;
+    const bracketIndex = lastKey.indexOf('[');
+    if (bracketIndex !== -1) {
+        lastKey = lastKey.slice(0, bracketIndex);
+    }
+    return enumCompression.get(lastKey);
+}
+
+/**
+ * A regular expression cannot run on the compressed number of an enum-value,
+ * so it is resolved up front into the indexes of the matching enum-values.
+ */
+function enumIndexesOfRegex(
+    enumValues: string[],
+    pattern: any,
+    options: any
+): number[] {
+    let source: string;
+    let flags: string;
+    if (pattern instanceof RegExp) {
+        source = pattern.source;
+        flags = (pattern.ignoreCase ? 'i' : '') + (pattern.multiline ? 'm' : '');
+    } else {
+        source = String(pattern);
+        flags = '';
+    }
+    if (typeof options === 'string') {
+        flags = options;
+    }
+    /**
+     * The global flags make .test() stateful
+     * and are meaningless for a full check of a single value.
+     */
+    flags = flags.replace(/[gy]/g, '');
+    const regex = new RegExp(source, flags);
+    const indexes: number[] = [];
+    for (let i = 0; i < enumValues.length; i++) {
+        if (regex.test(enumValues[i] as string)) {
+            indexes.push(i);
+        }
+    }
+    return indexes;
+}
+
+/**
  * @recursive
+ * @param enumValues The enum of the property that the selector belongs to,
+ * so that the compared values can be enum-compressed.
  */
 export function compressQuerySelector(
     table: CompressionTable,
-    selector: any
+    selector: any,
+    enumValues?: string[]
 ): any {
     if (Array.isArray(selector)) {
-        return selector.map(item => compressQuerySelector(table, item));
+        return selector.map(item => compressQuerySelector(table, item, enumValues));
     } else if (selector instanceof RegExp) {
         return selector;
     } else if (typeof selector === 'object' && selector !== null) {
         const ret: any = {};
+        /**
+         * $regex and its $options are replaced by a single $in
+         * with the indexes of the matching enum-values.
+         */
+        let regexIndexes: number[] | undefined;
+        if (enumValues && typeof selector['$regex'] !== 'undefined') {
+            regexIndexes = enumIndexesOfRegex(
+                enumValues,
+                selector['$regex'],
+                selector['$options']
+            );
+        }
         Object.keys(selector).forEach(key => {
+            if (regexIndexes && (key === '$regex' || key === '$options')) {
+                return;
+            }
             let useKey;
+            let useEnumValues;
             if (key.startsWith('$')) {
                 // operator
                 useKey = key;
+                useEnumValues = ENUM_VALUE_OPERATORS.indexOf(key) === -1 ? undefined : enumValues;
             } else {
                 // property path
                 useKey = compressedPath(
                     table,
                     key
                 );
+                useEnumValues = enumValuesOfPath(
+                    table,
+                    key
+                );
             }
-            ret[useKey] = compressQuerySelector(
-                table,
-                selector[key]
-            );
+            const value = selector[key];
+            if (useEnumValues && value instanceof RegExp) {
+                ret[useKey] = {
+                    $in: enumIndexesOfRegex(useEnumValues, value, undefined)
+                };
+            } else {
+                ret[useKey] = compressQuerySelector(
+                    table,
+                    value,
+                    useEnumValues
+                );
+            }
         });
+        if (regexIndexes) {
+            const alreadyIn = ret['$in'];
+            ret['$in'] = Array.isArray(alreadyIn) ?
+                regexIndexes.filter(index => alreadyIn.includes(index)) :
+                regexIndexes;
+        }
         return ret;
     } else {
+        if (enumValues) {
+            return compressEnumValue(enumValues, selector);
+        }
         return selector;
     }
 }
