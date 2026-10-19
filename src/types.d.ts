@@ -1,9 +1,20 @@
 export type TableType = Map<string, string>;
 
+/**
+ * Maps a property name to the sorted enum-values of that property.
+ * A value is compressed by replacing it with its index in this list.
+ */
+export type EnumCompressionTable = Map<string, string[]>;
+
 export type CompressionTable = {
     compressedToUncompressed: TableType;
     uncompressedToCompressed: TableType;
     compressionFlag: string;
+    /**
+     * Only set when enum-compression is enabled
+     * and the schema has at least one compressible enum.
+     */
+    enumCompression?: EnumCompressionTable;
 };
 
 
