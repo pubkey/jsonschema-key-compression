@@ -45,7 +45,7 @@
     "async-test-util": "2.5.0",
     "copyfiles": "2.4.1",
     "faker": "5.5.3",
-    "mingo": "7.2.4",
+    "mingo": "7.2.7",
     "mocha": "12.0.3",
     "node-gzip": "1.1.2",
     "rimraf": "6.1.4",
