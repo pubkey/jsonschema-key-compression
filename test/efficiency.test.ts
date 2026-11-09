@@ -1,6 +1,7 @@
 import {
     createCompressionTable,
-    compressObject
+    compressObject,
+    DEFAULT_COMPRESSION_FLAG
 } from '../src/index';
 
 import {
@@ -15,6 +16,12 @@ describe('efficiency.test.js', () => {
     const rawObject = randomObject();
     console.dir(rawObject);
     const compressionTable = createCompressionTable(schema);
+    const enumCompressionTable = createCompressionTable(
+        schema,
+        DEFAULT_COMPRESSION_FLAG,
+        [],
+        true
+    );
     it('raw json', async () => {
         const string = JSON.stringify(rawObject);
         console.dir(string);
@@ -39,6 +46,21 @@ describe('efficiency.test.js', () => {
         benchmark.keyCompressionPlusGzip = compressed.length;
     });
 
+
+    it('key compression plus enum compression', async () => {
+        const compressed: string = JSON.stringify(compressObject(enumCompressionTable, rawObject));
+        console.log(compressed);
+        benchmark.keyAndEnumCompression = compressed.length;
+    });
+
+    it('key compression plus enum compression plus gzip', async () => {
+        const compressed: Uint8Array = await gzip(
+            JSON.stringify(
+                compressObject(enumCompressionTable, rawObject)
+            )
+        );
+        benchmark.keyAndEnumCompressionPlusGzip = compressed.length;
+    });
 
     it('show results:', () => {
         console.log(JSON.stringify(benchmark, null, 2));

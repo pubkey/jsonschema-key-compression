@@ -4,6 +4,8 @@ import {
 
 import {
     createCompressionTable,
+    compressObject,
+    decompressObject,
     DEFAULT_COMPRESSION_FLAG
 } from '../../src/index';
 import type {
@@ -120,5 +122,49 @@ describe('create-compression-table.test.ts', () => {
             assert.ok(!uncompressedValues.includes('active'));
             assert.ok(!uncompressedValues.includes('deepNestedAttribute'));
         });
+    });
+});
+
+describe('create-compression-table.test.ts ignoreProperties roundtrip', () => {
+    /**
+     * A property name in ignoreProperties can be equal to one of the
+     * generated compressed keys like 'a', 'b', 'c'.
+     * This must not remove the decompression entry
+     * of a different, compressed property.
+     */
+    it('should decompress all compressed keys when an ignored property equals a compressed key', () => {
+        const schema: JsonSchema = {
+            type: 'object',
+            properties: {
+                b: {
+                    type: 'string'
+                },
+                firstName: {
+                    type: 'string'
+                },
+                lastName: {
+                    type: 'string'
+                }
+            }
+        };
+        const table = createCompressionTable(
+            schema,
+            DEFAULT_COMPRESSION_FLAG,
+            ['b']
+        );
+        const doc = {
+            b: 'not compressed',
+            firstName: 'Corrine',
+            lastName: 'Ziemann'
+        };
+        const compressed = compressObject(table, doc) as any;
+        // the ignored property must stay as it is
+        assert.strictEqual(compressed.b, 'not compressed');
+        // the other properties must be compressed
+        assert.strictEqual(compressed.firstName, undefined);
+        assert.strictEqual(compressed.lastName, undefined);
+
+        const decompressed = decompressObject(table, compressed);
+        assert.deepStrictEqual(decompressed, doc);
     });
 });
