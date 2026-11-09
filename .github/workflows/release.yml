@@ -1,0 +1,72 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'New Version (e.g. 1.0.0, or leave empty for patch)'
+        required: false
+        type: string
+
+jobs:
+  release:
+    runs-on: ubuntu-26.04
+    # @link https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+    permissions:
+      contents: write
+      # @link https://docs.npmjs.com/generating-provenance-statements#about-npm-provenance
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 26.13.0
+          registry-url: "https://registry.npmjs.org"
+
+      - name: install
+        run: npm install --silent
+
+      - name: Bump Version
+        id: bump
+        run: |
+            if [ -z "${{ inputs.version }}" ]; then
+              npm version patch --no-git-tag-version > /dev/null
+            else
+              npm version ${{ inputs.version }} --no-git-tag-version > /dev/null
+            fi
+            echo "version=v$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: build
+        run: npm run build
+
+      - name: lint
+        run: npm run lint
+
+      - name: test
+        run: npm run test
+
+      - name: efficiency
+        run: npm run test:efficiency
+
+      # npm trusted publishing: npm authenticates with the GitHub OIDC token (id-token: write),
+      # no npm token is needed. Provenance is generated automatically.
+      # @link https://docs.npmjs.com/trusted-publishers
+      - name: Publish
+        run: npm publish
+
+      - name: Push changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add package.json
+          git commit -m "release: ${{ steps.bump.outputs.version }}"
+          git tag ${{ steps.bump.outputs.version }}
+          git push --atomic origin HEAD ${{ steps.bump.outputs.version }}
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create ${{ steps.bump.outputs.version }} --title ${{ steps.bump.outputs.version }} --generate-notes --verify-tag
