@@ -4,6 +4,7 @@ import type {
     CompressionTable
 } from './types';
 import { decompressEnumValue } from './enum-compression';
+import { setProperty } from './util';
 
 export function decompressObject(
     table: CompressionTable,
@@ -29,13 +30,19 @@ export function decompressObject(
         const value = (obj as PlainJsonObjectNotArray)[key];
         const decompressed = decompressedKey(table, key);
         const enumValues = enumCompression && enumCompression.get(decompressed);
+        let newValue;
         if (enumValues && (typeof value === 'number' || Array.isArray(value))) {
-            ret[decompressed] = decompressEnumValue(enumValues, value);
+            newValue = decompressEnumValue(enumValues, value);
         } else {
             // primitives do not need a recursive call
-            ret[decompressed] = (typeof value === 'object' && value !== null) ?
+            newValue = (typeof value === 'object' && value !== null) ?
                 decompressObject(table, value) :
                 value;
+        }
+        if (decompressed === '__proto__') {
+            setProperty(ret, decompressed, newValue);
+        } else {
+            ret[decompressed] = newValue;
         }
     }
     return ret;

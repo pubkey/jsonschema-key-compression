@@ -4,11 +4,13 @@ import {
     compressedPath,
     compressQuerySelector,
     compressQuery,
+    createCompressionTable,
     MangoQuery
 } from '../../src/index';
 import {
     getDefaultCompressionTable,
-    getDefaultObject
+    getDefaultObject,
+    getDefaultSchema
 } from './test-util';
 
 describe('compress.test.ts', () => {
@@ -55,6 +57,52 @@ describe('compress.test.ts', () => {
                     obj
                 )
             );
+        });
+        ['__proto__', 'constructor', 'toString', 'hasOwnProperty'].forEach(specialKey => {
+            it('should keep the key ' + specialKey + ' as own property', () => {
+                const table = getDefaultCompressionTable();
+                const input = JSON.parse(
+                    '{"' + specialKey + '":{"length":3,"type":"text/plain"},' +
+                    '"nestedObject":{"' + specialKey + '":{"length":3,"type":"text/plain"}},' +
+                    '"objectArray":[{"' + specialKey + '":{"length":3}}]}'
+                );
+                const compressed: any = compressObject(table, input);
+                const nestedKey = compressedPath(table, 'nestedObject');
+                const arrayKey = compressedPath(table, 'objectArray');
+                assert.deepStrictEqual(
+                    Object.keys(compressed),
+                    [specialKey, nestedKey, arrayKey]
+                );
+                assert.deepStrictEqual(Object.keys(compressed[nestedKey]), [specialKey]);
+                assert.deepStrictEqual(Object.keys(compressed[arrayKey][0]), [specialKey]);
+                assert.strictEqual(Object.getPrototypeOf(compressed), Object.prototype);
+                assert.strictEqual(Object.getPrototypeOf(compressed[nestedKey]), Object.prototype);
+                assert.strictEqual(Object.getPrototypeOf(compressed[arrayKey][0]), Object.prototype);
+                assert.strictEqual(compressed.length, undefined);
+                assert.strictEqual(compressed[nestedKey].length, undefined);
+                assert.strictEqual(
+                    JSON.stringify(compressed),
+                    JSON.stringify(input)
+                        .replace('nestedObject', nestedKey)
+                        .replace('objectArray', arrayKey)
+                );
+            });
+        });
+        it('should compress the key __proto__ when it is a property of the schema', () => {
+            const schema = getDefaultSchema();
+            Object.defineProperty(schema.properties, '__proto__', {
+                value: { type: 'object' },
+                enumerable: true,
+                writable: true,
+                configurable: true
+            });
+            const table = createCompressionTable(schema);
+            const compressedKey = compressedPath(table, '__proto__');
+            assert.ok(compressedKey.startsWith(table.compressionFlag));
+            const input = JSON.parse('{"__proto__":{"length":3}}');
+            const compressed: any = compressObject(table, input);
+            assert.deepStrictEqual(Object.keys(compressed), [compressedKey]);
+            assert.deepStrictEqual(compressed[compressedKey], { length: 3 });
         });
     });
     describe('.compressedPath()', () => {
@@ -166,6 +214,21 @@ describe('compress.test.ts', () => {
                 }
             );
         });
+        it('should keep the key __proto__ as own property', () => {
+            const table = getDefaultCompressionTable();
+            const selector = JSON.parse('{"__proto__":{"$eq":"foo"},"name":{"__proto__":{"$eq":"foo"}}}');
+            const compressed = compressQuerySelector(table, selector);
+            const nameKey = compressedPath(table, 'name');
+            assert.deepStrictEqual(Object.keys(compressed), ['__proto__', nameKey]);
+            assert.deepStrictEqual(Object.keys(compressed[nameKey]), ['__proto__']);
+            assert.strictEqual(Object.getPrototypeOf(compressed), Object.prototype);
+            assert.strictEqual(Object.getPrototypeOf(compressed[nameKey]), Object.prototype);
+            assert.strictEqual(compressed.$eq, undefined);
+            assert.strictEqual(
+                JSON.stringify(compressed),
+                JSON.stringify(selector).replace('name', nameKey)
+            );
+        });
     });
     describe('.compressQuery()', () => {
         it('should compress all attributes', () => {
@@ -265,6 +328,20 @@ describe('compress.test.ts', () => {
                 compressed.sort,
                 { '|e': 'asc', '|a': 'desc' }
             );
+        });
+        it('should keep the key __proto__ of a sort-object as own property', () => {
+            const table = getDefaultCompressionTable();
+            const query: MangoQuery = {
+                selector: {},
+                sort: JSON.parse('{"__proto__":"asc","name":"desc"}')
+            };
+            const compressed = compressQuery(table, query);
+            assert.deepStrictEqual(
+                Object.keys(compressed.sort as any),
+                ['__proto__', compressedPath(table, 'name')]
+            );
+            assert.strictEqual(Object.getPrototypeOf(compressed.sort), Object.prototype);
+            assert.strictEqual((compressed.sort as any)['__proto__'], 'asc');
         });
         it('should work with regex', () => {
 

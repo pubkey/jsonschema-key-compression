@@ -5,6 +5,7 @@ import type {
     MangoQuery
 } from './types';
 import { compressEnumValue } from './enum-compression';
+import { setProperty } from './util';
 
 /**
  * compress the keys of an object via the compression-table
@@ -33,13 +34,20 @@ export function compressObject(
         const key = keys[index] as string;
         const value = (obj as PlainJsonObjectNotArray)[key];
         const enumValues = enumCompression && enumCompression.get(key);
+        const compressedKey = compressedAndFlaggedKey(table, key);
+        let newValue;
         if (enumValues && (typeof value === 'string' || Array.isArray(value))) {
-            ret[compressedAndFlaggedKey(table, key)] = compressEnumValue(enumValues, value);
+            newValue = compressEnumValue(enumValues, value);
         } else {
             // primitives do not need a recursive call
-            ret[compressedAndFlaggedKey(table, key)] = (typeof value === 'object' && value !== null) ?
+            newValue = (typeof value === 'object' && value !== null) ?
                 compressObject(table, value) :
                 value;
+        }
+        if (compressedKey === '__proto__') {
+            setProperty(ret, compressedKey, newValue);
+        } else {
+            ret[compressedKey] = newValue;
         }
     }
     return ret;
@@ -186,7 +194,7 @@ export function compressQuery(
                     table,
                     key
                 );
-                compressedSort[compressedField] = direction;
+                setProperty(compressedSort, compressedField, direction);
             });
             ret.sort = compressedSort;
         }
@@ -321,15 +329,15 @@ export function compressQuerySelector(
             }
             const value = selector[key];
             if (useEnumValues && value instanceof RegExp) {
-                ret[useKey] = {
+                setProperty(ret, useKey, {
                     $in: enumIndexesOfRegex(useEnumValues, value, undefined)
-                };
+                });
             } else {
-                ret[useKey] = compressQuerySelector(
+                setProperty(ret, useKey, compressQuerySelector(
                     table,
                     value,
                     useEnumValues
-                );
+                ));
             }
         });
         if (regexIndexes) {

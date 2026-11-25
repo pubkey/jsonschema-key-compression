@@ -139,6 +139,54 @@ describe('create-compressed-json-schema.test.ts', () => {
     });
 });
 
+describe('create-compressed-json-schema.test.ts key __proto__', () => {
+    it('should keep the key __proto__ as own property', () => {
+        const schema: JsonSchema = JSON.parse(JSON.stringify({
+            type: 'object',
+            properties: {
+                name: { type: 'string' },
+                PROTO: { type: 'object', properties: { length: { type: 'number' } } },
+                nested: { type: 'object', PROTO: { title: 'unknown keyword' } }
+            },
+            patternProperties: {
+                PROTO: { type: 'string' }
+            },
+            dependencies: {
+                PROTO: ['name']
+            },
+            definitions: {
+                PROTO: { type: 'string' }
+            }
+        }).replace(/PROTO/g, '__proto__'));
+        const table = createCompressionTable(schema, undefined, ['__proto__']);
+        const compressed: any = createCompressedJsonSchema(table, schema);
+        const nameKey = compressedPath(table, 'name');
+        const nestedKey = compressedPath(table, 'nested');
+
+        assert.deepStrictEqual(Object.keys(compressed.properties), [nameKey, '__proto__', nestedKey]);
+        assert.deepStrictEqual(Object.keys(compressed.patternProperties), ['__proto__']);
+        assert.deepStrictEqual(Object.keys(compressed.dependencies), ['__proto__']);
+        assert.deepStrictEqual(Object.keys(compressed.definitions), ['__proto__']);
+        assert.ok(Object.keys(compressed.properties[nestedKey]).includes('__proto__'));
+        [
+            compressed,
+            compressed.properties,
+            compressed.properties[nestedKey],
+            compressed.patternProperties,
+            compressed.dependencies,
+            compressed.definitions
+        ].forEach(obj => assert.strictEqual(Object.getPrototypeOf(obj), Object.prototype));
+        assert.strictEqual(
+            JSON.stringify(compressed),
+            JSON.stringify(schema)
+                .replace('"name":{', '"' + nameKey + '":{')
+                .replace('"nested":{', '"' + nestedKey + '":{')
+                .replace('["name"]', '["' + nameKey + '"]')
+                .replace('"length":{', '"' + compressedPath(table, 'length') + '":{')
+        );
+    });
+});
+
 describe('create-compressed-json-schema.test.ts enum values', () => {
     /**
      * enum values are document fragments,

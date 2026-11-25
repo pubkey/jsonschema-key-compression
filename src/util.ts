@@ -41,5 +41,23 @@ export const alphabeticCompare: SortComparator = (a, b) => {
  * @link https://jsperf.com/object-rest-spread-vs-clone/2
  */
 export function flatClone<T>(obj: T): T {
-    return Object.assign({}, obj);
+    if (!Object.prototype.hasOwnProperty.call(obj, '__proto__')) {
+        return Object.assign({}, obj);
+    }
+    const ret: any = {};
+    Object.keys(obj as any).forEach(key => setProperty(ret, key, (obj as any)[key]));
+    return ret;
+}
+
+export function setProperty(obj: any, key: string, value: any) {
+    if (key === '__proto__') {
+        Object.defineProperty(obj, key, {
+            value,
+            enumerable: true,
+            writable: true,
+            configurable: true
+        });
+    } else {
+        obj[key] = value;
+    }
 }
