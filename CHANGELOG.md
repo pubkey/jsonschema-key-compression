@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- FIX: `compressObject()` and `decompressObject()` lost the key `__proto__`. The key was assigned to the result object, which set the prototype of the result instead of creating a property, so the fields of the value showed up as inherited properties. The same is fixed for `compressQuery()`, `compressQuerySelector()` and `createCompressedJsonSchema()`.
 
 ## 2.0.0
 

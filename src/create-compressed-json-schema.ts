@@ -3,7 +3,7 @@ import type {
     JsonSchemaTypes,
     CompressionTable
 } from './types';
-import { flatClone } from './util';
+import { flatClone, setProperty } from './util';
 import {
     compressedPath,
     compressObject
@@ -99,7 +99,7 @@ export function createCompressedJsonSchema(
              * the keys of patternProperties and definitions are no property names.
              */
             const enumValues = (compressKeys && enumCompression) ? enumCompression.get(key) : undefined;
-            ret[useKey] = enumValues ? compressEnumOfSchema(subSchema, enumValues) : subSchema;
+            setProperty(ret, useKey, enumValues ? compressEnumOfSchema(subSchema, enumValues) : subSchema);
         });
         return ret;
     };
@@ -151,9 +151,9 @@ export function createCompressedJsonSchema(
         const newDependencies: { [k: string]: JsonSchema | string[] } = {};
         Object.keys(dependencies).forEach(key => {
             const dependency = dependencies[key] as JsonSchema | string[];
-            newDependencies[compressKey(key)] = Array.isArray(dependency) ?
+            setProperty(newDependencies, compressKey(key), Array.isArray(dependency) ?
                 dependency.map(compressKey) :
-                compressSchema(dependency);
+                compressSchema(dependency));
         });
         cloned.dependencies = newDependencies;
     }
